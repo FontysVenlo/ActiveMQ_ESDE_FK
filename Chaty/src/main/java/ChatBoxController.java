@@ -19,21 +19,17 @@ import model.ChatMessage;
 import model.User;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.LoggerFactory;
 import utils.ChatHelper;
 import utils.ColourHelper;
 
 import javax.jms.*;
-import java.awt.event.ActionListener;
 import java.net.URL;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
 @Getter
 @Setter
-public class ChatBoxController implements Initializable, ActionListener {
+public class ChatBoxController implements Initializable {
     
     // QUEUE Settings
     private static String QUEUE_USERNAME = "admin";
@@ -43,10 +39,7 @@ public class ChatBoxController implements Initializable, ActionListener {
     private static String TOPIC_NAME = "Topico";
 
     // Message property keys
-    private static String USER = "User";
-    private static String TIME = "Time";
     private static String MESSAGE = "Message";
-    private static String COLOUR = "Colour";
 
     @FXML
     private AnchorPane anchorPane;
@@ -93,10 +86,6 @@ public class ChatBoxController implements Initializable, ActionListener {
      */
     private void performSend() {
 
-        if (StringUtils.isNotBlank(this.errorLabel.getText())) {
-                this.errorLabel.setText("");
-            }
-
             // Cannot send an empty message
             if (StringUtils.isBlank(this.messageBox.getText())) {
                 this.errorLabel.setText("Message Cannot be empty");
@@ -107,7 +96,6 @@ public class ChatBoxController implements Initializable, ActionListener {
             if (StringUtils.isNotBlank(this.errorLabel.getText())) {
                 this.errorLabel.setText("");
             }
-
 
             this.factory = createActiveMqConnectionFactory(QUEUE_USERNAME, QUEUE_PASSWORD,
                     QUEUE_LOCATION);
@@ -140,26 +128,14 @@ public class ChatBoxController implements Initializable, ActionListener {
         Message message = session.createMessage();
         // create message
         User user = new User(LoginController.USERNAME, LoginController.SUBSCRIBER_NUMBER, this.colour.toString());
-        ChatMessage msg = new ChatMessage(text, returnCurrentLocalDateTimeAsString(), user);
+        ChatMessage msg = new ChatMessage(text, ChatHelper.returnCurrentLocalDateTimeAsString(), user);
         // chat message as json
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String chatMessageAsJson = gson.toJson(msg);
         message.setObjectProperty(MESSAGE, chatMessageAsJson);
-        System.out.println(message);
+        // insert print statement
         messageProducer.send(message);
         session.close();
-    }
-
-    /**
-     * Returns the current local date time as a string in the dd-MM-yyyy HH:mm format
-     *
-     * @return current local date time as a string
-     */
-    private String returnCurrentLocalDateTimeAsString() {
-        LocalDateTime dateTime = LocalDateTime.now();
-        DateTimeFormatter format = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
-        String timeSent = dateTime.format(format);
-        return timeSent;
     }
 
     /**
@@ -222,7 +198,7 @@ public class ChatBoxController implements Initializable, ActionListener {
                     // Buffer to create the message
 
                     try {
-                        // the received message
+                        // Gson builder
                         Gson gson = new GsonBuilder().setPrettyPrinting().create();
                         // retrieve message
                         String messageAsJson = (String) message.getObjectProperty(MESSAGE);
@@ -232,19 +208,16 @@ public class ChatBoxController implements Initializable, ActionListener {
                         message.acknowledge();
 
                         // Update the UI
-                        Platform.runLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                // Chat message JavaFX Node creation
-                                HBox hbox = ChatHelper.displayReceivedMessage(receivedChatMessage);
-                                if (receivedChatMessage.getUser().getUsername().equals(LoginController.USERNAME)
-                                        && receivedChatMessage.getUser().getSubscriberNumber().equals(LoginController.SUBSCRIBER_NUMBER)) {
-                                    hbox.setAlignment(Pos.CENTER_RIGHT);
-                                } else {
-                                    hbox.setAlignment(Pos.CENTER_LEFT);
-                                }
-                                chatBox.getChildren().add(hbox);
+                        Platform.runLater(() -> {
+                            // Chat message box creation
+                            HBox hbox = ChatHelper.displayReceivedMessage(receivedChatMessage);
+                            if (receivedChatMessage.getUser().getUsername().equals(LoginController.USERNAME)
+                                    && receivedChatMessage.getUser().getSubscriberNumber().equals(LoginController.SUBSCRIBER_NUMBER)) {
+                                hbox.setAlignment(Pos.CENTER_RIGHT);
+                            } else {
+                                hbox.setAlignment(Pos.CENTER_LEFT);
                             }
+                            chatBox.getChildren().add(hbox);
                         });
 
                     } catch (JMSException e) {
@@ -261,16 +234,11 @@ public class ChatBoxController implements Initializable, ActionListener {
 
 
     @Override
-    public void actionPerformed(java.awt.event.ActionEvent e) {
-
-    }
-
-    @Override
     public void initialize(URL location, ResourceBundle resources) {
+        //Set background colour
         this.chatBox.setBackground(new Background(new BackgroundFill(Color.LIGHTCYAN, null, null)));
         // Assign user to a colour
-        this.colour = ColourHelper.returnCorrespondingColor();
-
+        this.colour = ColourHelper.generateRandomColour();
         // Bind Chat Height to its parents height
         chatScrollPane.vvalueProperty().bind(chatBox.heightProperty());
         // listener which listens to incoming messages from the topic and updates the UI

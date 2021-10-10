@@ -11,6 +11,9 @@ import javafx.scene.text.TextBoundsType;
 import javafx.scene.text.TextFlow;
 import model.ChatMessage;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 public class ChatHelper {
 
     /**
@@ -75,5 +78,17 @@ public class ChatHelper {
         hbox.setPadding(new Insets(5));
 
         return hbox;
+    }
+
+    /**
+     * Returns the current local date time as a string in the dd-MM-yyyy HH:mm format
+     *
+     * @return current local date time as a string
+     */
+    public static String returnCurrentLocalDateTimeAsString() {
+        LocalDateTime dateTime = LocalDateTime.now();
+        DateTimeFormatter format = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
+        String timeSent = dateTime.format(format);
+        return timeSent;
     }
 }

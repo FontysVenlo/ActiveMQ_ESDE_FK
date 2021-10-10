@@ -17,7 +17,7 @@ public final class ColourHelper {
      *
      * @return a list of colours
      */
-    public static List<String> colourList() {
+    private static List<String> colourList() {
         String colourAsWord = "white,red,green,yellow,blue,pink,gray,brown," +
                 "orange,purple,aquamarine,crimson,deeppink,navy,wheat,chocolate,lime,silver,golden,yellowgreen";
         String[] colours = colourAsWord.split(",");
@@ -25,12 +25,13 @@ public final class ColourHelper {
         return Arrays.asList(colours);
     }
 
+
     /**
      * Returns random Colour object based on a list
      *
      * @return a Color
      */
-    public static Color returnCorrespondingColor() {
+    public static Color generateRandomColour() {
         List<String> colours = ColourHelper.colourList();
         Random rand = new Random();
         int randomNumber = rand.nextInt(colours.size() - 1);

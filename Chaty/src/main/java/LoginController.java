@@ -6,17 +6,14 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.RandomStringUtils;
 
-import javax.imageio.ImageIO;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -43,6 +40,9 @@ public class LoginController implements Initializable {
     @FXML
     private ImageView logoStart;
 
+    public static String USERNAME="";
+    public static String SUBSCRIBER_NUMBER ="";
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
@@ -65,11 +65,14 @@ public class LoginController implements Initializable {
         Parent root = loader.load();
 
         ChatBoxController controller = loader.getController();
-        controller.setUsername(this.usernameField.getText());
+        USERNAME = this.usernameField.getText();
+        SUBSCRIBER_NUMBER = RandomStringUtils.randomAlphanumeric(6);
         loader.setController(controller);
-        primaryStage.setScene(new Scene(root,600,600));
+
+        primaryStage.setScene(new Scene(root,600,800));
         primaryStage.setTitle("A Chat That You Should Not Build");
         primaryStage.show();
+
     }
 
 }

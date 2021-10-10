@@ -1,50 +1,46 @@
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import javafx.application.Platform;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
 
 import javafx.event.ActionEvent;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
-import javafx.scene.text.Font;
-import javafx.scene.text.Text;
-import javafx.scene.text.TextBoundsType;
-import javafx.scene.text.TextFlow;
 import lombok.Getter;
 import lombok.Setter;
+import model.ChatMessage;
+import model.User;
 import org.apache.activemq.ActiveMQConnectionFactory;
-import utils.Helper;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.LoggerFactory;
+import utils.ChatHelper;
+import utils.ColourHelper;
 
 import javax.jms.*;
 import java.awt.event.ActionListener;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Random;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
 @Getter
 @Setter
 public class ChatBoxController implements Initializable, ActionListener {
-
+    
     // QUEUE Settings
     private static String QUEUE_USERNAME = "admin";
     private static String QUEUE_PASSWORD = "admin";
-    private static String QUEUE_LOCATION = "tcp://145.93.128.93:61616";
+    private static String QUEUE_LOCATION = "tcp://localhost:61616";
     private static String QUEUE_NAME = "demo";
     private static String TOPIC_NAME = "Topico";
-    private static String Payload = "";
 
     // Message property keys
     private static String USER = "User";
@@ -75,21 +71,16 @@ public class ChatBoxController implements Initializable, ActionListener {
 
     private boolean isListening = false;
     private Color colour;
-    private int subscriberNumber;
     private ConnectionFactory factory;
-    private String username = "";
+
 
     @FXML
     void sendAction(ActionEvent event) {
-        this.messageBox.setOnKeyPressed(new EventHandler<KeyEvent>() {
-            @Override
-            public void handle(KeyEvent event) {
-                if (event.getCode().equals(KeyCode.ENTER)) {
-                    performSend();
-                }
+        this.messageBox.setOnKeyPressed(keyEvent -> {
+            if (keyEvent.getCode().equals(KeyCode.ENTER)) {
+                performSend();
             }
         });
-
     }
 
     @FXML
@@ -98,63 +89,65 @@ public class ChatBoxController implements Initializable, ActionListener {
     }
 
     /**
-     *
+     * Performs the actual send of the message
      */
-    private void performSend(){
-        if (!this.isListening) {
-            this.isListening = true;
-            Thread thread = new Thread(chatListener());
-            thread.run();
-        }
+    private void performSend() {
 
-        // Cannot send an empty message
-        if (this.messageBox.getText().isEmpty()) {
-            this.errorLabel.setText("Message Cannot be empty");
-            this.errorLabel.setTextFill(Color.RED);
-            return;
-        }
+        if (StringUtils.isNotBlank(this.errorLabel.getText())) {
+                this.errorLabel.setText("");
+            }
 
-        if (!this.errorLabel.getText().isEmpty()) {
-            this.errorLabel.setText("");
-        }
+            // Cannot send an empty message
+            if (StringUtils.isBlank(this.messageBox.getText())) {
+                this.errorLabel.setText("Message Cannot be empty");
+                this.errorLabel.setTextFill(Color.RED);
+                return;
+            }
+
+            if (StringUtils.isNotBlank(this.errorLabel.getText())) {
+                this.errorLabel.setText("");
+            }
 
 
-        this.factory = createActiveMqConnectionFactory(QUEUE_USERNAME, QUEUE_PASSWORD,
-                QUEUE_LOCATION);
-        Connection connection = null;
-        try {
-            connection = createConnection(this.factory);
-            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            Destination destination = session.createTopic(TOPIC_NAME);
+            this.factory = createActiveMqConnectionFactory(QUEUE_USERNAME, QUEUE_PASSWORD,
+                    QUEUE_LOCATION);
+            Connection connection = null;
+            try {
+                connection = createConnection(this.factory);
+                Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+                Destination destination = session.createTopic(TOPIC_NAME);
 
-            MessageProducer producer = createProducer(session, destination);
-            // send message
-            sendQueueMessage(producer, session, this.messageBox.getText());
-            connection.close();
-            this.messageBox.setText("");
-        } catch (JMSException e) {
-            Logger.getLogger("Failed : " + e.getStackTrace());
-        }
+                MessageProducer producer = createProducer(session, destination);
+                // send message
+                sendQueueMessage(producer, session, this.messageBox.getText());
+                connection.close();
+                this.messageBox.setText("");
+            } catch (JMSException e) {
+                Logger.getLogger("Failed : " + e.getStackTrace());
+            }
+
     }
 
     /**
      * Send message to Queue or Topic
      *
-     * @param messageProducer
-     * @param session
-     * @param text
+     * @param messageProducer {@link MessageProducer}
+     * @param session         {@link Session}
+     * @param text            text field input
      * @throws JMSException
      */
     private void sendQueueMessage(MessageProducer messageProducer, Session session, String text) throws JMSException {
         Message message = session.createMessage();
-        message.setObjectProperty(TIME, returnCurrentLocalDateTimeAsString());
-        message.setObjectProperty(USER, this.username);
-        message.setObjectProperty(MESSAGE, text);
-        message.setObjectProperty(COLOUR, this.colour.toString());
-
+        // create message
+        User user = new User(LoginController.USERNAME, LoginController.SUBSCRIBER_NUMBER, this.colour.toString());
+        ChatMessage msg = new ChatMessage(text, returnCurrentLocalDateTimeAsString(), user);
+        // chat message as json
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        String chatMessageAsJson = gson.toJson(msg);
+        message.setObjectProperty(MESSAGE, chatMessageAsJson);
+        System.out.println(message);
         messageProducer.send(message);
         session.close();
-        Logger.getLogger("Message sent : " + message);
     }
 
     /**
@@ -196,7 +189,7 @@ public class ChatBoxController implements Initializable, ActionListener {
     /**
      * Generate a JMS MessageProducer for the given JMS Session and Destination
      *
-     * @param session JMS Session
+     * @param session     JMS Session
      * @param destination JMS Destination
      * @return a JMS MessageProducer
      * @throws JMSException
@@ -217,28 +210,25 @@ public class ChatBoxController implements Initializable, ActionListener {
 
             try {
                 Connection connection = factory.createConnection();
-                connection.setClientID(username + "-" + subscriberNumber);
+                connection.setClientID(LoginController.USERNAME + "-" + LoginController.SUBSCRIBER_NUMBER);
                 connection.start();
 
                 Session session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
                 Topic topic = session.createTopic(TOPIC_NAME);
 
-                MessageConsumer consumer = session.createDurableSubscriber(topic, "Consumer-" + username);
+                MessageConsumer consumer = session.createDurableSubscriber(topic, "Consumer-" + LoginController.USERNAME);
                 // Listen to messages
                 consumer.setMessageListener(message -> {
                     // Buffer to create the message
-                    StringBuffer sb = new StringBuffer();
 
                     try {
                         // the received message
-                        Message receivedMessage = message;
-                        String receivedUsername = (String) receivedMessage.getObjectProperty(USER);
-                        String receivedColor = (String) receivedMessage.getObjectProperty(COLOUR);
-                        // Construct message
-                        sb.append(receivedUsername + " " + receivedMessage.getObjectProperty(TIME) + "\n");
-                        sb.append(receivedMessage.getObjectProperty(MESSAGE));
+                        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                        // retrieve message
+                        String messageAsJson = (String) message.getObjectProperty(MESSAGE);
+                        ChatMessage receivedChatMessage = gson.fromJson(messageAsJson, ChatMessage.class);
 
-
+                        // acknowledge arrival
                         message.acknowledge();
 
                         // Update the UI
@@ -246,12 +236,11 @@ public class ChatBoxController implements Initializable, ActionListener {
                             @Override
                             public void run() {
                                 // Chat message JavaFX Node creation
-                                HBox hbox = null;
-                                if (receivedUsername.equals(username)) {
-                                    hbox = displayReceivedMessage(sb.toString(), username, colour);
+                                HBox hbox = ChatHelper.displayReceivedMessage(receivedChatMessage);
+                                if (receivedChatMessage.getUser().getUsername().equals(LoginController.USERNAME)
+                                        && receivedChatMessage.getUser().getSubscriberNumber().equals(LoginController.SUBSCRIBER_NUMBER)) {
                                     hbox.setAlignment(Pos.CENTER_RIGHT);
                                 } else {
-                                    hbox = displayReceivedMessage(sb.toString(), receivedUsername, Color.valueOf(receivedColor));
                                     hbox.setAlignment(Pos.CENTER_LEFT);
                                 }
                                 chatBox.getChildren().add(hbox);
@@ -270,77 +259,27 @@ public class ChatBoxController implements Initializable, ActionListener {
         return runnable;
     }
 
-    /**
-     * Creates a box, sets the icon for the user and returns a HBox to be added to the chat
-     *
-     * @param message  the received message
-     * @param username the username
-     * @param colour   the colour of the user
-     * @return a HBox containing the message
-     */
-    private HBox displayReceivedMessage(String message, String username, Color colour) {
-        HBox hbox = new HBox(12);
-
-        // Add user Circle
-        Circle img = new Circle(32, 32, 16);
-        img.setFill(colour);
-
-        // Generate the user icon
-        String labelText = username.substring(0, 1);
-        Text userLogoText = new Text(labelText);
-        userLogoText.setBoundsType(TextBoundsType.VISUAL);
-        userLogoText.setFont(new Font(20));
-
-        // Added to a pane
-        StackPane stackPane = new StackPane();
-        stackPane.getChildren().addAll(img, userLogoText);
-
-        // Generate the message
-        Text text = new Text(message);
-        TextFlow tempFlow = new TextFlow();
-        tempFlow.getChildren().add(text);
-        tempFlow.setMaxWidth(200);
-
-        // add the Nodes to the HBox
-        hbox.getChildren().add(stackPane);
-        hbox.getChildren().add(tempFlow);
-
-        // Set Message box padding
-        hbox.setPadding(new Insets(5));
-
-        return hbox;
-    }
-
-    /**
-     * Returns random Colour object based on a list
-     *
-     * @return a Color
-     */
-    private Color returnCorrespondingColor() {
-        List<String> colours = Helper.colourList();
-        Random rand = new Random();
-        int randomNumber = rand.nextInt(colours.size() - 1);
-
-        String colourValue = colours.get(randomNumber);
-
-        return Color.valueOf(colourValue.toUpperCase());
-    }
 
     @Override
     public void actionPerformed(java.awt.event.ActionEvent e) {
 
     }
 
-
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        this.chatBox.setBackground(new Background(new BackgroundFill(Color.LIGHTCYAN,null,null)));
+        this.chatBox.setBackground(new Background(new BackgroundFill(Color.LIGHTCYAN, null, null)));
         // Assign user to a colour
-        this.colour = returnCorrespondingColor();
-        Random random = new Random();
-        this.subscriberNumber = random.nextInt(1000);
+        this.colour = ColourHelper.returnCorrespondingColor();
+
         // Bind Chat Height to its parents height
         chatScrollPane.vvalueProperty().bind(chatBox.heightProperty());
+        // listener which listens to incoming messages from the topic and updates the UI
+        if (!this.isListening) {
+            this.isListening = true;
+            Thread thread = new Thread(chatListener());
+            thread.run();
+        }
+
     }
 
 }

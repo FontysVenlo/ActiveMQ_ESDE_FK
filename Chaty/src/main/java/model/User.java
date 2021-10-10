@@ -5,6 +5,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * User object is used to store the sender's info in the message
+ */
 @Getter
 @Setter
 @AllArgsConstructor
@@ -12,5 +15,5 @@ import lombok.Setter;
 public class User {
     private String username;
     private String subscriberNumber;
-    private Message message;
+    private String color;
 }

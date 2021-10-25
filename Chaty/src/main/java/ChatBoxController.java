@@ -13,7 +13,6 @@ import javafx.scene.layout.*;
 
 import javafx.event.ActionEvent;
 import javafx.scene.paint.Color;
-import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.Setter;
 import model.ChatMessage;
@@ -69,11 +68,6 @@ public class ChatBoxController implements Initializable {
     private Color colour;
     private ConnectionFactory factory;
 
-
-    @FXML
-    void sendAction(ActionEvent event) {
-
-    }
 
     @FXML
     void send(ActionEvent event) {

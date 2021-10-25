@@ -30,12 +30,14 @@ import java.util.logging.Logger;
 @Getter
 @Setter
 public class ChatBoxController implements Initializable {
-    
+
+    Logger logger
+            = Logger.getLogger(ChatBoxController.class.getName());
+
     // QUEUE Settings
     private static String QUEUE_USERNAME = "admin";
     private static String QUEUE_PASSWORD = "admin";
     private static String QUEUE_LOCATION = "tcp://localhost:61616";
-    private static String QUEUE_NAME = "demo";
     private static String TOPIC_NAME = "Topico";
 
     // Message property keys
@@ -82,7 +84,20 @@ public class ChatBoxController implements Initializable {
     }
 
     /**
+     * 1. Implement the performSend() and all the private methods
+     *
+     * 1.1.1 {@link ChatBoxController#createActiveMqConnectionFactory(String, String, String)}
+     * 
+     * 1.3.1 {@link ChatBoxController#createConnection(ConnectionFactory)}
+     *
+     * 1.6.1 {@link ChatBoxController#createProducer(Session, Destination)}
+     * 
+     * 1.7.1 {@link ChatBoxController#sendQueueMessage(MessageProducer, Session, String)}
+     */
+
+    /**
      * Performs the actual send of the message
+     *
      */
     private void performSend() {
 
@@ -97,24 +112,36 @@ public class ChatBoxController implements Initializable {
                 this.errorLabel.setText("");
             }
 
+            // 1.1 set the factory using the QUEUE_USERNAME, QUEUE_PASSWORD and QUEUE_LOCATION variables of this Controller - (continue on 1.1.1)
             this.factory = createActiveMqConnectionFactory(QUEUE_USERNAME, QUEUE_PASSWORD,
                     QUEUE_LOCATION);
+            // 1.2 Create a connection object
             Connection connection = null;
             try {
+                // 1.3 set the connection using the private createConnection - (continue on 1.3.1)
                 connection = createConnection(this.factory);
-                Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-                Destination destination = session.createTopic(TOPIC_NAME);
 
+                // 1.4 Create a session object with the Session.AUTO_ACKNOWLEDGE
+                Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+                // 1.5 Create a Destination Object using the TOPIC_NAME
+                Destination destination = session.createTopic(TOPIC_NAME);
+                // 1.6 Create MessageProducer using the createProducer private method which uses the session and connection objects from 1.5-1.6
                 MessageProducer producer = createProducer(session, destination);
-                // send message
+                // 1.7 send the message using the sendQueueMessage method - (continue on 1.7.1)
                 sendQueueMessage(producer, session, this.messageBox.getText());
+                // close the connection to save resources
                 connection.close();
                 this.messageBox.setText("");
             } catch (JMSException e) {
-                Logger.getLogger("Failed : " + e.getStackTrace());
+                this.logger.info("Failed : " + e.getStackTrace());
             }
 
     }
+
+    /**
+     * 1.7.1 Implement the missing parts of the sendQueueMessage method
+     */
 
     /**
      * Send message to Queue or Topic
@@ -125,18 +152,25 @@ public class ChatBoxController implements Initializable {
      * @throws JMSException
      */
     private void sendQueueMessage(MessageProducer messageProducer, Session session, String text) throws JMSException {
+        //1.7.1.1 Create Message object using the given Session parameter
         Message message = session.createMessage();
-        // create message
+        // create message and user
         User user = new User(LoginController.USERNAME, LoginController.SUBSCRIBER_NUMBER, this.colour.toString());
         ChatMessage msg = new ChatMessage(text, ChatHelper.returnCurrentLocalDateTimeAsString(), user);
         // chat message as json
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String chatMessageAsJson = gson.toJson(msg);
+        // 1.7.1.2 Pass the chatMessageAsJson as an ObjectProperty of the message using the setObjectProperty(MESSAGE, chatMessageAsJson)
         message.setObjectProperty(MESSAGE, chatMessageAsJson);
-        // insert print statement
+        // 1.7.1.3 use the producer
         messageProducer.send(message);
+        // Close the session
         session.close();
     }
+
+    /**
+     * 1.1.1 Implement the createActiveMqConnectionFactory method which creates a ConnectionFactory - hint one line solution
+     */
 
     /**
      * Create an ActiveMQConnectionFactory using the given username, password and the url that corresponds to the targeted Queue URL
@@ -152,6 +186,10 @@ public class ChatBoxController implements Initializable {
     }
 
     /**
+     * 1.3.1 Implement the createConnection method which creates a JMS Connection - hint one line solution
+     */
+
+    /**
      * Creates a connection to the Queue using the given factory
      *
      * @param connectionFactory
@@ -161,6 +199,11 @@ public class ChatBoxController implements Initializable {
     private Connection createConnection(ConnectionFactory connectionFactory) throws JMSException {
         return connectionFactory.createConnection();
     }
+
+    /**
+     * 1.6.1 Implement the createProducer method which creates a JMS MessageProducer - hint one line solution
+     */
+
 
     /**
      * Generate a JMS MessageProducer for the given JMS Session and Destination
@@ -175,41 +218,52 @@ public class ChatBoxController implements Initializable {
     }
 
     /**
+     *  2. Create the listener which is going to update the UI with the incoming messages
+     */
+
+    /**
      * Creates a listener which "listens" to a specific topic and updates the UI with the received message
      *
      * @return a runnable
      */
     private Runnable chatListener() {
         Runnable runnable = () -> {
+            // 2.1. Create connection factory
             ConnectionFactory factory = new ActiveMQConnectionFactory(QUEUE_USERNAME, QUEUE_PASSWORD,
                     QUEUE_LOCATION);
 
             try {
+                // 2.2. Create connection
                 Connection connection = factory.createConnection();
+                // 2.3. Set the Client ID using the username from that was set in the previous controller
+                //    a dash - and the subscriber number also generated in the LoginController class
                 connection.setClientID(LoginController.USERNAME + "-" + LoginController.SUBSCRIBER_NUMBER);
                 connection.start();
 
+                // 2.4. Create a session which acknowledges the incoming messages
                 Session session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+                // 2.5. Create the topic object using the TOPIC_NAME
                 Topic topic = session.createTopic(TOPIC_NAME);
-
+                // 2.6. Create a MessageConsumer object
                 MessageConsumer consumer = session.createDurableSubscriber(topic, "Consumer-" + LoginController.USERNAME);
-                // Listen to messages
+                // 2.7. Listen to incoming messages using the consumer
                 consumer.setMessageListener(message -> {
                     // Buffer to create the message
 
                     try {
-                        // Gson builder
+                        // 2.8. Create a gson object which will deserialize the object
                         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                        // retrieve message
+                        // 2.9. Retrieve a message from the message properties using the MESSAGE
                         String messageAsJson = (String) message.getObjectProperty(MESSAGE);
+                        // 2.10. Create the ChatMessage object using the Gson and the message from step 9.
                         ChatMessage receivedChatMessage = gson.fromJson(messageAsJson, ChatMessage.class);
 
-                        // acknowledge arrival
+                        // 2.11. Acknowledge the message
                         message.acknowledge();
 
                         // Update the UI
                         Platform.runLater(() -> {
-                            // Chat message box creation
+                            // Generate the message
                             HBox hbox = ChatHelper.displayReceivedMessage(receivedChatMessage);
                             if (receivedChatMessage.getUser().getUsername().equals(LoginController.USERNAME)
                                     && receivedChatMessage.getUser().getSubscriberNumber().equals(LoginController.SUBSCRIBER_NUMBER)) {
@@ -241,6 +295,7 @@ public class ChatBoxController implements Initializable {
         this.colour = ColourHelper.generateRandomColour();
         // Bind Chat Height to its parents height
         chatScrollPane.vvalueProperty().bind(chatBox.heightProperty());
+        chatScrollPane.vvalueProperty().bind(chatBox.widthProperty());
         // listener which listens to incoming messages from the topic and updates the UI
         if (!this.isListening) {
             this.isListening = true;

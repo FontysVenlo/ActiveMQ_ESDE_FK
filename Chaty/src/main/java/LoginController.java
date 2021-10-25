@@ -63,7 +63,7 @@ public class LoginController implements Initializable {
         Stage primaryStage = new Stage();
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/chat.fxml"));
         Parent root = loader.load();
-        // set user name and subscriber
+        // set username and subscriber
         USERNAME = this.usernameField.getText();
         SUBSCRIBER_NUMBER = RandomStringUtils.randomAlphanumeric(6);
 

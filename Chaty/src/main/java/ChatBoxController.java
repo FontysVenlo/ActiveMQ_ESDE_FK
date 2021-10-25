@@ -13,6 +13,7 @@ import javafx.scene.layout.*;
 
 import javafx.event.ActionEvent;
 import javafx.scene.paint.Color;
+import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.Setter;
 import model.ChatMessage;
@@ -71,11 +72,7 @@ public class ChatBoxController implements Initializable {
 
     @FXML
     void sendAction(ActionEvent event) {
-        this.messageBox.setOnKeyPressed(keyEvent -> {
-            if (keyEvent.getCode().equals(KeyCode.ENTER)) {
-                performSend();
-            }
-        });
+
     }
 
     @FXML
@@ -85,6 +82,8 @@ public class ChatBoxController implements Initializable {
 
     /**
      * 1. Implement the performSend() and all the private methods
+     *
+     * Quick links to other exercises
      *
      * 1.1.1 {@link ChatBoxController#createActiveMqConnectionFactory(String, String, String)}
      * 
@@ -235,7 +234,7 @@ public class ChatBoxController implements Initializable {
                 // 2.2. Create connection
                 Connection connection = factory.createConnection();
                 // 2.3. Set the Client ID using the username from that was set in the previous controller
-                //    a dash - and the subscriber number also generated in the LoginController class
+                //      a dash - and the subscriber number also generated in the LoginController class
                 connection.setClientID(LoginController.USERNAME + "-" + LoginController.SUBSCRIBER_NUMBER);
                 connection.start();
 
@@ -294,13 +293,20 @@ public class ChatBoxController implements Initializable {
         // Bind Chat Height to its parents height
         chatScrollPane.vvalueProperty().bind(chatBox.heightProperty());
         chatScrollPane.vvalueProperty().bind(chatBox.widthProperty());
+        // listener for the message box
+        this.messageBox.setOnKeyPressed(keyEvent -> {
+            if (keyEvent.getCode().equals(KeyCode.ENTER)) {
+                performSend();
+            }
+        });
+
+        Thread thread = null;
         // listener which listens to incoming messages from the topic and updates the UI
         if (!this.isListening) {
             this.isListening = true;
-            Thread thread = new Thread(chatListener());
+            thread = new Thread(chatListener());
             thread.run();
         }
-
     }
 
 }

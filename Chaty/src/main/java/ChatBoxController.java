@@ -204,7 +204,6 @@ public class ChatBoxController implements Initializable {
      * 1.6.1 Implement the createProducer method which creates a JMS MessageProducer - hint one line solution
      */
 
-
     /**
      * Generate a JMS MessageProducer for the given JMS Session and Destination
      *
@@ -248,7 +247,6 @@ public class ChatBoxController implements Initializable {
                 MessageConsumer consumer = session.createDurableSubscriber(topic, "Consumer-" + LoginController.USERNAME);
                 // 2.7. Listen to incoming messages using the consumer
                 consumer.setMessageListener(message -> {
-                    // Buffer to create the message
 
                     try {
                         // 2.8. Create a gson object which will deserialize the object

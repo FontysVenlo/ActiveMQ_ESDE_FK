@@ -34,13 +34,13 @@ public class ChatBoxController implements Initializable {
     Logger logger
             = Logger.getLogger(ChatBoxController.class.getName());
 
-    // QUEUE Settings
+    // TOPIC Settings
     private static String QUEUE_USERNAME = "admin";
     private static String QUEUE_PASSWORD = "admin";
     private static String QUEUE_LOCATION = "tcp://localhost:61616";
     private static String TOPIC_NAME = "Topico";
 
-    // Message property keys
+    // Message property key
     private static String MESSAGE = "Message";
 
     @FXML

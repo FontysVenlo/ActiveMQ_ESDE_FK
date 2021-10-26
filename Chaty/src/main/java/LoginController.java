@@ -71,7 +71,7 @@ public class LoginController implements Initializable {
         Parent root = loader.load();
 
         primaryStage.setScene(new Scene(root,600,800));
-        primaryStage.setTitle("A Chat That You Should Not Build");
+        primaryStage.setTitle("A Chat That You Should Not Build - Chatty v0.1 (and there won't be a next one)");
         primaryStage.show();
     }
 

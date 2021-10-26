@@ -28,7 +28,7 @@ public class ChatBox extends Application {
         loader.setController(controller);
 
         Scene scene = new Scene(root, 600, 600);
-        stage.setTitle("A Chat That You Should Not Build");
+        stage.setTitle("A Chat That You Should Not Build - Chatty v0.1 (and there won't be a next one)");
         stage.setScene(scene);
         stage.show();
     }

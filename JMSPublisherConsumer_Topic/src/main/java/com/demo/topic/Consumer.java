@@ -16,9 +16,14 @@ import java.util.Random;
 
 public class Consumer {
 
+	private static String USER = "User";
+	private static String TIME = "Time";
+	private static String MESSAGE = "Message";
+
+
 	public static void main(String[] args) {
 		ConnectionFactory factory = new ActiveMQConnectionFactory("admin", "admin", 
-				"tcp://192.168.0.60:61616");
+				"tcp://localhost:61616");
 		
 		try {
 			Random rand = new Random();
@@ -31,15 +36,12 @@ public class Consumer {
 			Topic topic = session.createTopic("Topo-Remoto-testo");
 			
 			MessageConsumer consumer = session.createDurableSubscriber(topic, "Consumer-" + rand.nextInt(200));
-			consumer.setMessageListener(new MessageListener() {
-				
-				public void onMessage(Message message) {
-					TextMessage textMessage = (TextMessage) message;
-					try {
-						System.out.println(textMessage.getText());
-					} catch (JMSException e) {
-						e.printStackTrace();
-					}
+			consumer.setMessageListener(message -> {
+				try {
+					System.out.println(message.getObjectProperty(USER) + " " + message.getObjectProperty(TIME));
+					System.out.println(message.getObjectProperty(MESSAGE));
+				} catch (JMSException e) {
+					e.printStackTrace();
 				}
 			});
 		} catch (JMSException e) {

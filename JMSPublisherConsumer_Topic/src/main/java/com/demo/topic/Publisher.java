@@ -15,7 +15,6 @@ public class Publisher {
     private static String USER = "User";
     private static String TIME = "Time";
     private static String MESSAGE = "Message";
-    private static String COLOUR = "Colour";
 
     public static void main(String[] args) {
         ConnectionFactory factory = new ActiveMQConnectionFactory("admin", "admin",
@@ -26,7 +25,7 @@ public class Publisher {
 
             Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-            Destination destination = session.createTopic("Topico");
+            Destination destination = session.createTopic("Topo-Remoto-testo");
 
             MessageProducer producer = session.createProducer(destination);
 
@@ -34,7 +33,6 @@ public class Publisher {
             message.setObjectProperty(TIME, returnCurrentLocalDateTimeAsString());
             message.setObjectProperty(USER, "Test-USer");
             message.setObjectProperty(MESSAGE, "Heio");
-            message.setObjectProperty(COLOUR, Color.VIOLET.toString());
 
             producer.send(message);
 

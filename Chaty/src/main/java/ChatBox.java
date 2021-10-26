@@ -18,7 +18,7 @@ public class ChatBox extends Application {
         LoginController controller = loader.getController();
 
         // set logo
-        URL url = getClass().getResource("/pics/logo.png");
+        URL url = getClass().getResource("/pics/logo2.png");
         Image img = new Image(url.toExternalForm());
         // set logo image
         controller.setLogoStart(new ImageView(img));

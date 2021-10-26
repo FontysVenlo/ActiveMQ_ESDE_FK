@@ -4,6 +4,7 @@ import javafx.geometry.Insets;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -14,6 +15,9 @@ import model.ChatMessage;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * Util class which is used to create the chat message
+ */
 public class ChatHelper {
 
     /**
@@ -41,6 +45,7 @@ public class ChatHelper {
         Text userLogoText = new Text(userLabelText.toUpperCase());
         userLogoText.setBoundsType(TextBoundsType.VISUAL);
         userLogoText.setFont(new Font(20));
+        userLogoText.setFill(Color.WHITE);
         return  userLogoText;
     }
 

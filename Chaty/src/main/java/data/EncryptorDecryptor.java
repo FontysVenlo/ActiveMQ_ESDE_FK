@@ -30,17 +30,18 @@ public class EncryptorDecryptor {
      */
     public String encrypt(String valueToEncrypt) {
         try {
+            // load application properties to retrieve key and salt
             InputStream steam = getClass().getClassLoader().getResourceAsStream(APPLICATION_PROPERTIES);
             Properties prop = new Properties();
             prop.load(steam);
 
-            IvParameterSpec ivspec = new IvParameterSpec(IV);
+            IvParameterSpec ivSpec = new IvParameterSpec(IV);
             SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-            KeySpec spec = new PBEKeySpec(prop.getProperty("key").toCharArray(), prop.getProperty("key").getBytes(), 65536, 256);
+            KeySpec spec = new PBEKeySpec(prop.getProperty("key").toCharArray(), prop.getProperty("iv").getBytes(), 65536, 256);
             SecretKey tmp = factory.generateSecret(spec);
             SecretKeySpec secretKey = new SecretKeySpec(tmp.getEncoded(), "AES");
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivspec);
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivSpec);
             return Base64.getEncoder()
                     .encodeToString(cipher.doFinal(valueToEncrypt.getBytes(StandardCharsets.UTF_8)));
         } catch (Exception e) {
@@ -62,13 +63,13 @@ public class EncryptorDecryptor {
             Properties prop = new Properties();
             prop.load(steam);
 
-            IvParameterSpec ivspec = new IvParameterSpec(IV);
+            IvParameterSpec ivSpec = new IvParameterSpec(IV);
             SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-            KeySpec spec = new PBEKeySpec(prop.getProperty("key").toCharArray(), prop.getProperty("key").getBytes(), 65536, 256);
+            KeySpec spec = new PBEKeySpec(prop.getProperty("key").toCharArray(), prop.getProperty("iv").getBytes(), 65536, 256);
             SecretKey tmp = factory.generateSecret(spec);
             SecretKeySpec secretKey = new SecretKeySpec(tmp.getEncoded(), "AES");
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
-            cipher.init(Cipher.DECRYPT_MODE, secretKey, ivspec);
+            cipher.init(Cipher.DECRYPT_MODE, secretKey, ivSpec);
             return new String(cipher.doFinal(Base64.getDecoder().decode(valueToDecrypt)));
         } catch (Exception e) {
             System.out.println("Failed to decrypt " + e.getStackTrace());

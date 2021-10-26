@@ -8,18 +8,18 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.spec.KeySpec;
 import java.util.Base64;
+import java.util.Properties;
 
 /**
  * Class which helps with encrypting decrypting values
  */
 @Data
 public class EncryptorDecryptor {
-
-    private static final String SECRET_KEY = "kljsdfl347!@q23asd!&";
-    private static final String SALT_VALUE = "bvcb25y$5t*%£re";
+    private static final String APPLICATION_PROPERTIES="application.properties";
     private static final byte[] IV = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
     /**
@@ -30,10 +30,13 @@ public class EncryptorDecryptor {
      */
     public String encrypt(String valueToEncrypt) {
         try {
+            InputStream steam = getClass().getClassLoader().getResourceAsStream(APPLICATION_PROPERTIES);
+            Properties prop = new Properties();
+            prop.load(steam);
 
             IvParameterSpec ivspec = new IvParameterSpec(IV);
             SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-            KeySpec spec = new PBEKeySpec(SECRET_KEY.toCharArray(), SALT_VALUE.getBytes(), 65536, 256);
+            KeySpec spec = new PBEKeySpec(prop.getProperty("key").toCharArray(), prop.getProperty("key").getBytes(), 65536, 256);
             SecretKey tmp = factory.generateSecret(spec);
             SecretKeySpec secretKey = new SecretKeySpec(tmp.getEncoded(), "AES");
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
@@ -55,9 +58,13 @@ public class EncryptorDecryptor {
      */
     public String decrypt(String valueToDecrypt) {
         try {
+            InputStream steam = getClass().getClassLoader().getResourceAsStream(APPLICATION_PROPERTIES);
+            Properties prop = new Properties();
+            prop.load(steam);
+
             IvParameterSpec ivspec = new IvParameterSpec(IV);
             SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-            KeySpec spec = new PBEKeySpec(SECRET_KEY.toCharArray(), SALT_VALUE.getBytes(), 65536, 256);
+            KeySpec spec = new PBEKeySpec(prop.getProperty("key").toCharArray(), prop.getProperty("key").getBytes(), 65536, 256);
             SecretKey tmp = factory.generateSecret(spec);
             SecretKeySpec secretKey = new SecretKeySpec(tmp.getEncoded(), "AES");
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");

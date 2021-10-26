@@ -28,6 +28,9 @@ import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
+/**
+ * ChatBoxController which handles the chat stage actions
+ */
 @Getter
 @Setter
 public class ChatBoxController implements Initializable {

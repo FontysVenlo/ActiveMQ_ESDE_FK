@@ -1,5 +1,6 @@
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import data.EncryptorDecryptor;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -67,6 +68,7 @@ public class ChatBoxController implements Initializable {
     private boolean isListening = false;
     private Color colour;
     private ConnectionFactory factory;
+    private EncryptorDecryptor encryptorDecryptor;
 
 
     @FXML
@@ -152,7 +154,8 @@ public class ChatBoxController implements Initializable {
         ChatMessage msg = new ChatMessage(text, ChatHelper.returnCurrentLocalDateTimeAsString(), user);
         // chat message as json
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        String chatMessageAsJson = gson.toJson(msg);
+        this.encryptorDecryptor = new EncryptorDecryptor();
+        String chatMessageAsJson = encryptorDecryptor.encrypt(gson.toJson(msg));
         // 1.7.1.2 Pass the chatMessageAsJson as an ObjectProperty of the message using the setObjectProperty(MESSAGE, chatMessageAsJson)
         message.setObjectProperty(MESSAGE, chatMessageAsJson);
         // 1.7.1.3 use the producer
@@ -245,9 +248,11 @@ public class ChatBoxController implements Initializable {
                         // 2.8. Create a gson object which will deserialize the object
                         Gson gson = new GsonBuilder().setPrettyPrinting().create();
                         // 2.9. Retrieve a message from the message properties using the MESSAGE
-                        String messageAsJson = (String) message.getObjectProperty(MESSAGE);
+                        EncryptorDecryptor encDec = new EncryptorDecryptor();
+                        String retrievedMessageAsString = (String) message.getObjectProperty(MESSAGE);
+                        String decryptedMessage = encDec.decrypt(retrievedMessageAsString);
                         // 2.10. Create the ChatMessage object using the Gson and the message from step 9.
-                        ChatMessage receivedChatMessage = gson.fromJson(messageAsJson, ChatMessage.class);
+                        ChatMessage receivedChatMessage = gson.fromJson(decryptedMessage, ChatMessage.class);
 
                         // 2.11. Acknowledge the message
                         message.acknowledge();

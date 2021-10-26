@@ -1,3 +1,4 @@
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -48,7 +49,8 @@ public class LoginController implements Initializable {
 
     }
 
-    public void login(javafx.event.ActionEvent event) throws IOException {
+    @FXML
+    public void login(ActionEvent event) throws IOException {
         // check username value
         if(this.usernameField.getText().isEmpty()){
             this.errorLabel.setText("Please insert a Username");
@@ -58,22 +60,19 @@ public class LoginController implements Initializable {
             this.errorLabel.setText("");
         }
 
+        // set username and subscriber
+        USERNAME = this.usernameField.getText();
+        SUBSCRIBER_NUMBER = RandomStringUtils.randomAlphanumeric(6);
+
         Stage stage = (Stage) loginAnchorPane.getScene().getWindow();
         stage.close();
         Stage primaryStage = new Stage();
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/chat.fxml"));
         Parent root = loader.load();
-        // set username and subscriber
-        USERNAME = this.usernameField.getText();
-        SUBSCRIBER_NUMBER = RandomStringUtils.randomAlphanumeric(6);
-
-        ChatBoxController controller = loader.getController();
-        loader.setController(controller);
 
         primaryStage.setScene(new Scene(root,600,800));
         primaryStage.setTitle("A Chat That You Should Not Build");
         primaryStage.show();
-
     }
 
 }

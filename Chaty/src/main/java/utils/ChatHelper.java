@@ -38,7 +38,7 @@ public class ChatHelper {
      */
     private static Text createTextFromReceivedMessage(ChatMessage chatMessage){
         String userLabelText = chatMessage.getUser().getUsername().substring(0, 1);
-        Text userLogoText = new Text(userLabelText);
+        Text userLogoText = new Text(userLabelText.toUpperCase());
         userLogoText.setBoundsType(TextBoundsType.VISUAL);
         userLogoText.setFont(new Font(20));
         return  userLogoText;

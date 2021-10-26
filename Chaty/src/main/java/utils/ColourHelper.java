@@ -6,6 +6,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * Util class which helps with colour picking
+ */
 public final class ColourHelper {
 
     /**
@@ -14,8 +17,7 @@ public final class ColourHelper {
      * @return a list of colours
      */
     private static List<String> colourList() {
-        String colourAsWord = "white,red,green,yellow,blue,pink,gray,brown," +
-                "orange,purple,aquamarine,crimson,deeppink,navy,wheat,chocolate,lime,silver,golden,yellowgreen";
+        String colourAsWord = "white,red,green,yellow,blue,pink,gray,brown,orange,purple,aquamarine,crimson,deeppink,navy,wheat,chocolate,lime,silver,gold,yellowgreen";
         String[] colours = colourAsWord.split(",");
 
         return Arrays.asList(colours);

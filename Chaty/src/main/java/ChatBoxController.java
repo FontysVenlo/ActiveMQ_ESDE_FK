@@ -223,7 +223,7 @@ public class ChatBoxController implements Initializable {
      */
     private Runnable chatListener() {
         Runnable runnable = () -> {
-            // 2.1. Create connection factory
+            // 2.1. Create connection factory using
             ConnectionFactory factory = new ActiveMQConnectionFactory(QUEUE_USERNAME, QUEUE_PASSWORD,
                     QUEUE_LOCATION);
 
@@ -240,7 +240,7 @@ public class ChatBoxController implements Initializable {
                 // 2.5. Create the topic object using the TOPIC_NAME
                 Topic topic = session.createTopic(TOPIC_NAME);
                 // 2.6. Create a MessageConsumer object
-                MessageConsumer consumer = session.createDurableSubscriber(topic, "Consumer-" + LoginController.USERNAME);
+                MessageConsumer consumer = session.createDurableSubscriber(topic, "Consumer-" + LoginController.SUBSCRIBER_NUMBER);
                 // 2.7. Listen to incoming messages using the consumer
                 consumer.setMessageListener(message -> {
 

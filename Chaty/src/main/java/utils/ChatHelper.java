@@ -68,7 +68,7 @@ public class ChatHelper {
         Text text = new Text(ChatHelper.createMessageFromObject(receivedMessage));
         TextFlow tempFlow = new TextFlow();
         tempFlow.getChildren().add(text);
-        tempFlow.setMaxWidth(200);
+        tempFlow.setPrefWidth(200);
 
         // add the Nodes to the HBox
         hbox.getChildren().add(stackPane);

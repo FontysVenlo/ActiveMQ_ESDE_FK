@@ -16,7 +16,7 @@ public class Consumer {
 
 	public static void main(String[] args) {
 		ConnectionFactory factory = new ActiveMQConnectionFactory("admin", "admin", 
-				"tcp://192.168.0.60:61616");
+				"tcp://localhost:61616");
 		
 		try {
 			Connection connection = factory.createConnection();

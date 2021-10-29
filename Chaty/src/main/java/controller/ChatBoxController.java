@@ -3,11 +3,9 @@ package controller;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import data.EncryptorDecryptor;
-import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -26,8 +24,8 @@ import lombok.Setter;
 import model.ChatMessage;
 import model.User;
 import org.apache.activemq.ActiveMQConnectionFactory;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
+import service.ChatUpdater;
 import utils.ChatHelper;
 import utils.ColourHelper;
 import utils.QueueUtils;
@@ -50,7 +48,7 @@ public class ChatBoxController implements Initializable {
             = Logger.getLogger(ChatBoxController.class.getName());
 
     // Message property key
-    private static String MESSAGE = "Message";
+    public static String MESSAGE = "Message";
 
     @FXML
     private AnchorPane anchorPane;
@@ -76,36 +74,31 @@ public class ChatBoxController implements Initializable {
     @FXML
     private VBox chatBox;
 
-    private boolean isListening;
+    private boolean isListening = true;
     private Color colour;
     private ConnectionFactory factory;
     private EncryptorDecryptor encryptorDecryptor;
+
+    private ChatUpdater chatUpdater;
     private Thread thread;
-
-    private long extraThreadId;
-
 
     @FXML
     void send(ActionEvent event) {
-
-        Node node = (Node) event.getSource();
-        Stage thisStage = (Stage) node.getScene().getWindow();
-        // interrupt the thread when closing the window
-        thisStage.setOnCloseRequest(closeEvent -> {
-            this.isListening = false;
-            this.thread.interrupt();
-            System.out.println(this.thread.isAlive());
-        });
-
         performSend();
     }
 
+    /**
+     * Takes the user to the previous page of the Chat Rooms list
+     * @param event
+     * @throws IOException
+     */
     @FXML
     public void back(ActionEvent event) throws IOException {
         // close current state
         Node node = (Node) event.getSource();
-        Stage thisStage = (Stage) node.getScene().getWindow();
-        thisStage.close();
+        Stage currentStage = (Stage) node.getScene().getWindow();
+        setStageExit(currentStage);
+        currentStage.close();
 
         // load chat rooms page
         Stage primaryStage = new Stage();
@@ -146,6 +139,9 @@ public class ChatBoxController implements Initializable {
         if (StringUtils.isNotBlank(this.errorLabel.getText())) {
             this.errorLabel.setText("");
         }
+
+        Stage currentStage = (Stage) this.errorLabel.getScene().getWindow();
+        setStageExit(currentStage);
 
         // 1.1 set the factory using the QUEUE_USERNAME, QUEUE_PASSWORD and QUEUE_LOCATION variables of in QueueUtils - (continue on 1.1.1)
         // QueueUtils is a helper class with public static fields
@@ -255,86 +251,21 @@ public class ChatBoxController implements Initializable {
     }
 
     /**
-     *  2. Create the listener which is going to update the UI with the incoming messages
+     * Sets a listener of what to do when the the current stage is closing
+     * @param stage Current active Stage
      */
-
-    /**
-     * Creates a listener which "listens" to a specific topic and updates the UI with the received message
-     *
-     * @return a runnable
-     */
-    private Runnable chatListener(boolean isConsumerListening) {
-        Runnable runnable = () -> {
-            // 2.1. Create connection factory using
-            ConnectionFactory factory = new ActiveMQConnectionFactory(QueueUtils.QUEUE_USERNAME, QueueUtils.QUEUE_PASSWORD,
-                    QueueUtils.QUEUE_LOCATION);
-
+    private void setStageExit(Stage stage){
+        stage.setOnCloseRequest(event -> {
+            // terminate the thread and kill it!!!!
+            this.chatUpdater.terminate();
+            this.thread.interrupt();
             try {
-                // 2.2. Create connection
-                Connection connection = factory.createConnection();
-                // 2.3. Set the Client ID using the username from that was set in the previous controller
-                //      a dash - and the subscriber number also generated in the controller.LoginController class
-                connection.setClientID(LoginController.USERNAME + "-" + LoginController.SUBSCRIBER_NUMBER + " " + RandomStringUtils.randomAlphanumeric(3));
-                connection.start();
-
-                // 2.4. Create a session which acknowledges the incoming messages
-                Session session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-                // 2.5. Create the topic object using the TOPIC_NAME
-                Topic topic = session.createTopic(ChatRoomController.TOPIC_NAME);
-                // 2.6. Create a MessageConsumer object
-                MessageConsumer consumer = session.createDurableSubscriber(topic, "Consumer-" + LoginController.SUBSCRIBER_NUMBER);
-
-                // 2.7. Listen to incoming messages using the consumer
-                consumer.setMessageListener(message -> {
-                    try {
-
-                        if (!isConsumerListening) {
-                            System.out.println("i am in the activemq closer");
-                            consumer.close();
-                            session.close();
-                            connection.close();
-                        }
-                        // get id
-                        extraThreadId = Thread.currentThread().getId();
-
-                        // 2.8. Create a gson object which will deserialize the object
-                        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                        // 2.9. Retrieve a message from the message properties using the MESSAGE
-                        EncryptorDecryptor encDec = new EncryptorDecryptor();
-                        String retrievedMessageAsString = (String) message.getObjectProperty(MESSAGE);
-                        String decryptedMessage = encDec.decrypt(retrievedMessageAsString);
-                        // 2.10. Create the ChatMessage object using the Gson and the decrypted message from step 9.
-                        ChatMessage receivedChatMessage = gson.fromJson(decryptedMessage, ChatMessage.class);
-
-                        // 2.11. Acknowledge the message
-                        message.acknowledge();
-
-                        // Update the UI
-                        Platform.runLater(() -> {
-                            // Generate the message
-                            HBox hbox = ChatHelper.displayReceivedMessage(receivedChatMessage);
-                            if (receivedChatMessage.getUser().getUsername().equals(LoginController.USERNAME)
-                                    && receivedChatMessage.getUser().getSubscriberNumber().equals(LoginController.SUBSCRIBER_NUMBER)) {
-                                hbox.setAlignment(Pos.CENTER_RIGHT);
-                            } else {
-                                hbox.setAlignment(Pos.CENTER_LEFT);
-                            }
-                            chatBox.getChildren().add(hbox);
-                        });
-
-                    } catch (JMSException e) {
-                        e.printStackTrace();
-                    }
-
-                });
-            } catch (JMSException e) {
+                this.thread.join();
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        };
-
-        return runnable;
+        });
     }
-
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -353,9 +284,9 @@ public class ChatBoxController implements Initializable {
             }
         });
 
-        this.isListening = true;
-        this.thread = new Thread(chatListener(this.isListening));
-        this.extraThreadId = this.thread.getId();
+        // Create an updater object and start a new thread which updates the ui
+        this.chatUpdater = new ChatUpdater(true,chatBox);
+        this.thread = new Thread(this.chatUpdater);
         this.thread.start();
 
     }

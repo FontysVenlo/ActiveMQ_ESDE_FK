@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -59,6 +60,10 @@ public class ChatRoomController implements Initializable {
         Stage primaryStage = new Stage();
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/chat.fxml"));
         Parent root = loader.load();
+
+        primaryStage.setOnCloseRequest(event -> {
+            TOPIC_NAME="";
+        });
 
         primaryStage.setScene(new Scene(root, 600, 800));
         primaryStage.setTitle(TOPIC_NAME + " " + TitleUtils.CHAT_TITLE);

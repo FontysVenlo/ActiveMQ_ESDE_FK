@@ -65,10 +65,14 @@ public class LoginController implements Initializable {
             }
         });
 
+        this.usernameField.setOnKeyPressed(keyEvent -> {
+
+        });
+
     }
 
     @FXML
-    public void login(ActionEvent event) throws IOException {
+    public void login() throws IOException {
         // check username value
         if(this.usernameField.getText().isEmpty()){
             this.errorLabel.setText("Please insert a Username");
@@ -76,10 +80,9 @@ public class LoginController implements Initializable {
             return;
         }
 
-        // set username and subscriber
+        // set username and subscriber number
         USERNAME = this.usernameField.getText();
         SUBSCRIBER_NUMBER = RandomStringUtils.randomAlphanumeric(6);
-
 
         Stage stage = (Stage) loginAnchorPane.getScene().getWindow();
         stage.close();
@@ -91,7 +94,6 @@ public class LoginController implements Initializable {
         primaryStage.setScene(new Scene(root,600,800));
         primaryStage.setTitle(TitleUtils.CHAT_ROOMS_TITLE);
         primaryStage.show();
-
 
     }
 

@@ -44,7 +44,6 @@ public class ChatHelper {
         Text userLogoText = new Text(userLabelText.toUpperCase());
         userLogoText.setBoundsType(TextBoundsType.VISUAL);
         userLogoText.setFont(new Font(20));
-        userLogoText.setFill(Color.WHITE);
         return  userLogoText;
     }
 

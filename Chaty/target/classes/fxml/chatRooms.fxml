@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
+
+
+<AnchorPane fx:id="chatRoomsAnchorPane" prefHeight="597.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.ChatRoomController">
+   <children>
+      <Label fx:id="chatRoomsLabel" layoutX="257.0" layoutY="14.0" text="Chat Rooms" />
+      <AnchorPane fx:id="chatRoomsSpace" layoutY="65.0" prefHeight="532.0" prefWidth="600.0" />
+      <Button fx:id="refreshRooms" layoutX="525.0" layoutY="10.0" mnemonicParsing="false" onAction="#refresh" text="Refresh" />
+   </children>
+</AnchorPane>

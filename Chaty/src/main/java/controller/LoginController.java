@@ -18,7 +18,9 @@ import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import service.BrokerInfoRetriever;
+import utils.TitleUtils;
 
 import java.util.List;
 
@@ -56,6 +58,12 @@ public class LoginController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        // if there is
+        this.usernameField.setOnKeyPressed(keyEvent -> {
+            if(StringUtils.isNotBlank(this.errorLabel.getText())){
+                this.errorLabel.setText("");
+            }
+        });
 
     }
 
@@ -83,7 +91,7 @@ public class LoginController implements Initializable {
 
 
         primaryStage.setScene(new Scene(root,600,800));
-        primaryStage.setTitle("A Chat That You Should Not Build - Chatty v0.1 (and there won't be a next one) - ChatRooms");
+        primaryStage.setTitle(TitleUtils.CHAT_ROOMS_TITLE);
         primaryStage.show();
 
 

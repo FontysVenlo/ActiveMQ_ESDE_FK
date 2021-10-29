@@ -21,5 +21,6 @@
          </children>
       </AnchorPane>
       <Label fx:id="errorLabel" layoutX="75.0" layoutY="528.0" />
+      <Button fx:id="backButton" layoutX="14.0" layoutY="503.0" mnemonicParsing="false" onAction="#back" text="Back" />
    </children>
 </AnchorPane>

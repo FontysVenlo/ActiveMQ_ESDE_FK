@@ -6,6 +6,7 @@ import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
+import utils.TitleUtils;
 
 import java.net.URL;
 
@@ -29,7 +30,7 @@ public class ChatBox extends Application {
         loader.setController(controller);
 
         Scene scene = new Scene(root, 600, 600);
-        stage.setTitle("A Chat That You Should Not Build - Chatty v0.1 (and there won't be a next one)");
+        stage.setTitle(TitleUtils.LOGIN_TITLE);
         stage.setScene(scene);
         stage.show();
     }

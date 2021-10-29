@@ -15,13 +15,12 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
 import service.BrokerInfoRetriever;
+import utils.TitleUtils;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 @Getter
@@ -48,7 +47,9 @@ public class ChatRoomController implements Initializable {
     }
 
     @FXML
-    public void refresh(ActionEvent event){
+    public void refresh(ActionEvent event) {
+        // Remove the current
+        this.chatRoomsSpace.getChildren().clear();
         createChatRooms();
     }
 
@@ -59,17 +60,13 @@ public class ChatRoomController implements Initializable {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/chat.fxml"));
         Parent root = loader.load();
 
-        primaryStage.setOnCloseRequest(event -> {
-            TOPIC_NAME="";
-        });
-
         primaryStage.setScene(new Scene(root, 600, 800));
-        primaryStage.setTitle("A Chat That You Should Not Build - Chatty v0.1 (and there won't be a next one)");
+        primaryStage.setTitle(TOPIC_NAME + " " + TitleUtils.CHAT_TITLE);
         primaryStage.show();
     }
 
     /**
-     * Retrieves
+     * Retrieves the available chatrooms and displays them
      */
     private void createChatRooms() {
         BrokerInfoRetriever brokerInfoRetriever = new BrokerInfoRetriever();
@@ -78,9 +75,9 @@ public class ChatRoomController implements Initializable {
         this.chatRoomsSpace.getChildren().add(chatRoomsList);
 
         chatRoomsList.setOnMouseClicked(event -> {
-            String chatRoomValue = chatRoomsList.getSelectionModel().getSelectedItem().toString();
-            if (StringUtils.isNotBlank(chatRoomValue)) {
-                TOPIC_NAME = chatRoomValue.trim();
+            Object chatRoomValue = chatRoomsList.getSelectionModel().getSelectedItem();
+            if (chatRoomValue != null) {
+                TOPIC_NAME = chatRoomValue.toString().trim();
                 try {
                     openChat();
                 } catch (IOException e) {

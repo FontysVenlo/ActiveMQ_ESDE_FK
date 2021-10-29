@@ -5,8 +5,12 @@ import com.google.gson.GsonBuilder;
 import data.EncryptorDecryptor;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
@@ -16,17 +20,21 @@ import javafx.scene.layout.*;
 
 import javafx.event.ActionEvent;
 import javafx.scene.paint.Color;
+import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.Setter;
 import model.ChatMessage;
 import model.User;
 import org.apache.activemq.ActiveMQConnectionFactory;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import utils.ChatHelper;
 import utils.ColourHelper;
 import utils.QueueUtils;
+import utils.TitleUtils;
 
 import javax.jms.*;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
@@ -54,6 +62,9 @@ public class ChatBoxController implements Initializable {
     private Button sendMessageButton;
 
     @FXML
+    private Button backButton;
+
+    @FXML
     private Label errorLabel;
 
     @FXML
@@ -65,15 +76,45 @@ public class ChatBoxController implements Initializable {
     @FXML
     private VBox chatBox;
 
-    private boolean isListening = false;
+    private boolean isListening;
     private Color colour;
     private ConnectionFactory factory;
     private EncryptorDecryptor encryptorDecryptor;
+    private Thread thread;
+
+    private long extraThreadId;
 
 
     @FXML
     void send(ActionEvent event) {
+
+        Node node = (Node) event.getSource();
+        Stage thisStage = (Stage) node.getScene().getWindow();
+        // interrupt the thread when closing the window
+        thisStage.setOnCloseRequest(closeEvent -> {
+            this.isListening = false;
+            this.thread.interrupt();
+            System.out.println(this.thread.getStackTrace());
+        });
+
         performSend();
+    }
+
+    @FXML
+    public void back(ActionEvent event) throws IOException {
+        // close current state
+        Node node = (Node) event.getSource();
+        Stage thisStage = (Stage) node.getScene().getWindow();
+        thisStage.close();
+
+        // load chat rooms page
+        Stage primaryStage = new Stage();
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/chatRooms.fxml"));
+        Parent root = loader.load();
+
+        primaryStage.setScene(new Scene(root, 600, 800));
+        primaryStage.setTitle(TitleUtils.CHAT_ROOMS_TITLE);
+        primaryStage.show();
     }
 
     /**
@@ -82,57 +123,56 @@ public class ChatBoxController implements Initializable {
      * Quick links to other exercises
      *
      * 1.1.1 {@link ChatBoxController#createActiveMqConnectionFactory(String, String, String)}
-     * 
+     *
      * 1.3.1 {@link ChatBoxController#createConnection(ConnectionFactory)}
      *
      * 1.6.1 {@link ChatBoxController#createProducer(Session, Destination)}
-     * 
+     *
      * 1.7.1 {@link ChatBoxController#sendQueueMessage(MessageProducer, Session, String)}
      */
 
     /**
      * Performs the actual send of the message
-     *
      */
     private void performSend() {
 
-            // Cannot send an empty message
-            if (StringUtils.isBlank(this.messageBox.getText())) {
-                this.errorLabel.setText("Message Cannot be empty");
-                this.errorLabel.setTextFill(Color.RED);
-                return;
-            }
+        // Cannot send an empty message
+        if (StringUtils.isBlank(this.messageBox.getText())) {
+            this.errorLabel.setText("Message Cannot be empty");
+            this.errorLabel.setTextFill(Color.RED);
+            return;
+        }
 
-            if (StringUtils.isNotBlank(this.errorLabel.getText())) {
-                this.errorLabel.setText("");
-            }
+        if (StringUtils.isNotBlank(this.errorLabel.getText())) {
+            this.errorLabel.setText("");
+        }
 
-            // 1.1 set the factory using the QUEUE_USERNAME, QUEUE_PASSWORD and QUEUE_LOCATION variables of in QueueUtils - (continue on 1.1.1)
-            // QueueUtils is a helper class with public static fields
-            this.factory = createActiveMqConnectionFactory(QueueUtils.QUEUE_USERNAME, QueueUtils.QUEUE_PASSWORD,
-                    QueueUtils.QUEUE_LOCATION);
-            // 1.2 Create a connection object
-            Connection connection = null;
-            try {
-                // 1.3 set the connection using the private createConnection - (continue on 1.3.1)
-                connection = createConnection(this.factory);
+        // 1.1 set the factory using the QUEUE_USERNAME, QUEUE_PASSWORD and QUEUE_LOCATION variables of in QueueUtils - (continue on 1.1.1)
+        // QueueUtils is a helper class with public static fields
+        this.factory = createActiveMqConnectionFactory(QueueUtils.QUEUE_USERNAME, QueueUtils.QUEUE_PASSWORD,
+                QueueUtils.QUEUE_LOCATION);
+        // 1.2 Create a connection object
+        Connection connection = null;
+        try {
+            // 1.3 set the connection using the private createConnection - (continue on 1.3.1)
+            connection = createConnection(this.factory);
 
-                // 1.4 Create a session object with the Session.AUTO_ACKNOWLEDGE
-                Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            // 1.4 Create a session object with the Session.AUTO_ACKNOWLEDGE
+            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-                // 1.5 Create a Destination Object using the TOPIC_NAME
-                Destination destination = session.createTopic(ChatRoomController.TOPIC_NAME);
-                // 1.6 Create MessageProducer using the createProducer private method which uses the session and connection objects from 1.5-1.6
-                MessageProducer producer = createProducer(session, destination);
-                // 1.7 send the message using the sendQueueMessage method - (continue on 1.7.1)
-                sendQueueMessage(producer, session, this.messageBox.getText());
-                // close the connection, producer to save resources
-                producer.close();
-                connection.close();
-                this.messageBox.setText("");
-            } catch (JMSException e) {
-                this.logger.info("Failed : " + e.getStackTrace());
-            }
+            // 1.5 Create a Destination Object using the TOPIC_NAME
+            Destination destination = session.createTopic(ChatRoomController.TOPIC_NAME);
+            // 1.6 Create MessageProducer using the createProducer private method which uses the session and connection objects from 1.5-1.6
+            MessageProducer producer = createProducer(session, destination);
+            // 1.7 send the message using the sendQueueMessage method - (continue on 1.7.1)
+            sendQueueMessage(producer, session, this.messageBox.getText());
+            // close the connection, producer to save resources
+            producer.close();
+            connection.close();
+            this.messageBox.setText("");
+        } catch (JMSException e) {
+            this.logger.info("Failed : " + e.getStackTrace());
+        }
 
     }
 
@@ -223,7 +263,7 @@ public class ChatBoxController implements Initializable {
      *
      * @return a runnable
      */
-    private Runnable chatListener() {
+    private Runnable chatListener(boolean isConsumerListening) {
         Runnable runnable = () -> {
             // 2.1. Create connection factory using
             ConnectionFactory factory = new ActiveMQConnectionFactory(QueueUtils.QUEUE_USERNAME, QueueUtils.QUEUE_PASSWORD,
@@ -234,7 +274,7 @@ public class ChatBoxController implements Initializable {
                 Connection connection = factory.createConnection();
                 // 2.3. Set the Client ID using the username from that was set in the previous controller
                 //      a dash - and the subscriber number also generated in the controller.LoginController class
-                connection.setClientID(LoginController.USERNAME + "-" + LoginController.SUBSCRIBER_NUMBER);
+                connection.setClientID(LoginController.USERNAME + "-" + LoginController.SUBSCRIBER_NUMBER + " " + RandomStringUtils.randomAlphanumeric(3));
                 connection.start();
 
                 // 2.4. Create a session which acknowledges the incoming messages
@@ -243,10 +283,20 @@ public class ChatBoxController implements Initializable {
                 Topic topic = session.createTopic(ChatRoomController.TOPIC_NAME);
                 // 2.6. Create a MessageConsumer object
                 MessageConsumer consumer = session.createDurableSubscriber(topic, "Consumer-" + LoginController.SUBSCRIBER_NUMBER);
+
                 // 2.7. Listen to incoming messages using the consumer
                 consumer.setMessageListener(message -> {
-
                     try {
+
+                        if (!isConsumerListening) {
+                            System.out.println("i am in the activemq closer");
+                            consumer.close();
+                            session.close();
+                            connection.close();
+                        }
+                        // get id
+                        extraThreadId = Thread.currentThread().getId();
+
                         // 2.8. Create a gson object which will deserialize the object
                         Gson gson = new GsonBuilder().setPrettyPrinting().create();
                         // 2.9. Retrieve a message from the message properties using the MESSAGE
@@ -275,6 +325,7 @@ public class ChatBoxController implements Initializable {
                     } catch (JMSException e) {
                         e.printStackTrace();
                     }
+
                 });
             } catch (JMSException e) {
                 e.printStackTrace();
@@ -302,13 +353,10 @@ public class ChatBoxController implements Initializable {
             }
         });
 
-        Thread thread = null;
-        // listener which listens to incoming messages from the topic and updates the UI
-        if (!this.isListening) {
-            this.isListening = true;
-            thread = new Thread(chatListener());
-            thread.run();
-        }
+        this.isListening = true;
+        this.thread = new Thread(chatListener(this.isListening));
+        this.extraThreadId = this.thread.getId();
+        this.thread.start();
 
     }
 

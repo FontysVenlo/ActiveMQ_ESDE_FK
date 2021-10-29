@@ -1,11 +1,13 @@
 package service;
 import org.apache.activemq.ActiveMQConnection;
 import org.apache.activemq.ActiveMQConnectionFactory;
+import org.apache.activemq.advisory.AdvisorySupport;
 import org.apache.activemq.advisory.DestinationSource;
 import org.apache.activemq.command.ActiveMQTopic;
 import utils.QueueUtils;
 
 import javax.jms.JMSException;
+import javax.jms.TopicSubscriber;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
@@ -17,6 +19,7 @@ public class BrokerInfoRetriever {
      * @return
      */
     public List<String> getTopics(){
+
         List<String> topicNames = new ArrayList<>();
         ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(QueueUtils.QUEUE_USERNAME, QueueUtils.QUEUE_PASSWORD,
                 QueueUtils.QUEUE_LOCATION);

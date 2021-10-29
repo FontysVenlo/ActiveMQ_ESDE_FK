@@ -24,6 +24,7 @@ import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.lang3.StringUtils;
 import utils.ChatHelper;
 import utils.ColourHelper;
+import utils.QueueUtils;
 
 import javax.jms.*;
 import java.net.URL;
@@ -39,12 +40,6 @@ public class ChatBoxController implements Initializable {
 
     Logger logger
             = Logger.getLogger(ChatBoxController.class.getName());
-
-    // TOPIC Settings
-    private static String QUEUE_USERNAME = "admin";
-    private static String QUEUE_PASSWORD = "admin";
-    private static String QUEUE_LOCATION = "tcp://localhost:61616";
-    private static String TOPIC_NAME = "Topico";
 
     // Message property key
     private static String MESSAGE = "Message";
@@ -112,9 +107,10 @@ public class ChatBoxController implements Initializable {
                 this.errorLabel.setText("");
             }
 
-            // 1.1 set the factory using the QUEUE_USERNAME, QUEUE_PASSWORD and QUEUE_LOCATION variables of this Controller - (continue on 1.1.1)
-            this.factory = createActiveMqConnectionFactory(QUEUE_USERNAME, QUEUE_PASSWORD,
-                    QUEUE_LOCATION);
+            // 1.1 set the factory using the QUEUE_USERNAME, QUEUE_PASSWORD and QUEUE_LOCATION variables of in QueueUtils - (continue on 1.1.1)
+            // QueueUtils is a helper class with public static fields
+            this.factory = createActiveMqConnectionFactory(QueueUtils.QUEUE_USERNAME, QueueUtils.QUEUE_PASSWORD,
+                    QueueUtils.QUEUE_LOCATION);
             // 1.2 Create a connection object
             Connection connection = null;
             try {
@@ -230,8 +226,8 @@ public class ChatBoxController implements Initializable {
     private Runnable chatListener() {
         Runnable runnable = () -> {
             // 2.1. Create connection factory using
-            ConnectionFactory factory = new ActiveMQConnectionFactory(QUEUE_USERNAME, QUEUE_PASSWORD,
-                    QUEUE_LOCATION);
+            ConnectionFactory factory = new ActiveMQConnectionFactory(QueueUtils.QUEUE_USERNAME, QueueUtils.QUEUE_PASSWORD,
+                    QueueUtils.QUEUE_LOCATION);
 
             try {
                 // 2.2. Create connection

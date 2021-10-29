@@ -29,6 +29,7 @@ public class BrokerInfoRetriever {
             DestinationSource destSource = connection.getDestinationSource();
             Set<ActiveMQTopic> topics = destSource.getTopics();
 
+
             topics.forEach(topic -> {
                 try {
                     topicNames.add(topic.getTopicName());
@@ -40,7 +41,6 @@ public class BrokerInfoRetriever {
         } catch (JMSException e) {
             e.printStackTrace();
         }
-
 
         return topicNames;
     }

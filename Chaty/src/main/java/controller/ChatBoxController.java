@@ -94,7 +94,7 @@ public class ChatBoxController implements Initializable {
         thisStage.setOnCloseRequest(closeEvent -> {
             this.isListening = false;
             this.thread.interrupt();
-            System.out.println(this.thread.getStackTrace());
+            System.out.println(this.thread.isAlive());
         });
 
         performSend();

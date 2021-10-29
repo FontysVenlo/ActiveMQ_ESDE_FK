@@ -74,8 +74,6 @@ public class LoginController implements Initializable {
             this.errorLabel.setText("Please insert a Username");
             this.errorLabel.setTextFill(Color.RED);
             return;
-        }else{
-            this.errorLabel.setText("");
         }
 
         // set username and subscriber

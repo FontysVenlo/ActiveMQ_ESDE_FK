@@ -14,6 +14,7 @@ import javafx.scene.layout.*;
 
 import javafx.event.ActionEvent;
 import javafx.scene.paint.Color;
+import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.Setter;
 import model.ChatMessage;
@@ -289,6 +290,7 @@ public class ChatBoxController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+
         //Set background colour
         this.chatBox.setBackground(new Background(new BackgroundFill(Color.LIGHTCYAN, null, null)));
         // Assign user to a colour
@@ -310,6 +312,7 @@ public class ChatBoxController implements Initializable {
             thread = new Thread(chatListener());
             thread.run();
         }
+
     }
 
 }

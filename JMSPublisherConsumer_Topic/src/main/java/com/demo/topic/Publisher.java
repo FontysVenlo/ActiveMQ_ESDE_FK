@@ -38,6 +38,7 @@ public class Publisher {
 
             System.out.println("Message published to topic");
 
+            producer.close();
             session.close();
             connection.close();
         } catch (JMSException e) {

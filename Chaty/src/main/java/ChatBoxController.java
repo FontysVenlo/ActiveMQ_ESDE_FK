@@ -128,7 +128,8 @@ public class ChatBoxController implements Initializable {
                 MessageProducer producer = createProducer(session, destination);
                 // 1.7 send the message using the sendQueueMessage method - (continue on 1.7.1)
                 sendQueueMessage(producer, session, this.messageBox.getText());
-                // close the connection to save resources
+                // close the connection, producer to save resources
+                producer.close();
                 connection.close();
                 this.messageBox.setText("");
             } catch (JMSException e) {

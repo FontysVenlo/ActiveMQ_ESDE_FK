@@ -80,7 +80,7 @@ public class ChatBoxController implements Initializable {
     private EncryptorDecryptor encryptorDecryptor;
 
     private ChatUpdater chatUpdater;
-    private Thread thread;
+    private Thread updater;
 
     @FXML
     void send(ActionEvent event) {
@@ -258,9 +258,9 @@ public class ChatBoxController implements Initializable {
         stage.setOnCloseRequest(event -> {
             // terminate the thread and kill it!!!!
             this.chatUpdater.terminate();
-            this.thread.interrupt();
+            this.updater.interrupt();
             try {
-                this.thread.join();
+                this.updater.join();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -286,8 +286,8 @@ public class ChatBoxController implements Initializable {
 
         // Create an updater object and start a new thread which updates the ui
         this.chatUpdater = new ChatUpdater(true,chatBox);
-        this.thread = new Thread(this.chatUpdater);
-        this.thread.start();
+        this.updater = new Thread(this.chatUpdater);
+        this.updater.start();
 
     }
 

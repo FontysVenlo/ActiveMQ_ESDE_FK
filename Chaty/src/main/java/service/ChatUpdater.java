@@ -29,7 +29,7 @@ import javax.jms.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ChatUpdater implements Runnable{
+public class ChatUpdater implements Runnable {
 
     private volatile boolean terminator;
     private VBox chatBox;
@@ -37,27 +37,30 @@ public class ChatUpdater implements Runnable{
     /**
      * Method which is used to terminate the current thread
      */
-    public void terminate(){
+    public void terminate() {
         this.terminator = false;
     }
 
     /**
-     *  2. Create the listener which is going to update the UI with the incoming messages
+     * 2. Create the listener which is going to update the UI with the incoming messages
      */
     @Override
     public void run() {
 
+        // gson object which
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        EncryptorDecryptor encryptorDecryptor = new EncryptorDecryptor();
+
         // 2.1. Create connection factory using
         ConnectionFactory factory = new ActiveMQConnectionFactory(QueueUtils.QUEUE_USERNAME, QueueUtils.QUEUE_PASSWORD,
                 QueueUtils.QUEUE_LOCATION);
-
 
         try {
             // 2.2. Create connection
             Connection connection = factory.createConnection();
             // 2.3. Set the Client ID using the username from that was set in the previous controller
             //      a dash - and the subscriber number also generated in the controller.LoginController class
-            connection.setClientID(LoginController.USERNAME + "-" + LoginController.SUBSCRIBER_NUMBER + " " + RandomStringUtils.randomAlphanumeric(3));
+            connection.setClientID(LoginController.USERNAME + "-" + LoginController.SUBSCRIBER_NUMBER + "-" + RandomStringUtils.randomAlphanumeric(8));
             connection.start();
 
             // 2.4. Create a session which acknowledges the incoming messages
@@ -67,18 +70,16 @@ public class ChatUpdater implements Runnable{
             // 2.6. Create a MessageConsumer object
             MessageConsumer consumer = session.createDurableSubscriber(topic, "Consumer-" + LoginController.SUBSCRIBER_NUMBER);
             // while the thread is running listen to incoming messages
-            while(terminator){
+            while (terminator) {
 
                 // 2.7. Listen to incoming messages using the consumer
                 consumer.setMessageListener(message -> {
+
                     try {
 
-                        // 2.8. Create a gson object which will deserialize the object
-                        Gson gson = new GsonBuilder().setPrettyPrinting().create();
                         // 2.9. Retrieve a message from the message properties using the MESSAGE
-                        EncryptorDecryptor encDec = new EncryptorDecryptor();
                         String retrievedMessageAsString = (String) message.getObjectProperty(ChatBoxController.MESSAGE);
-                        String decryptedMessage = encDec.decrypt(retrievedMessageAsString);
+                        String decryptedMessage = encryptorDecryptor.decrypt(retrievedMessageAsString);
                         // 2.10. Create the ChatMessage object using the Gson and the decrypted message from step 9.
                         ChatMessage receivedChatMessage = gson.fromJson(decryptedMessage, ChatMessage.class);
 
@@ -87,7 +88,7 @@ public class ChatUpdater implements Runnable{
 
                         // Update the UI
                         Platform.runLater(() -> {
-                            // Generate the message
+                            // Generate the message as a UI object
                             HBox hbox = ChatHelper.displayReceivedMessage(receivedChatMessage);
                             if (receivedChatMessage.getUser().getUsername().equals(LoginController.USERNAME)
                                     && receivedChatMessage.getUser().getSubscriberNumber().equals(LoginController.SUBSCRIBER_NUMBER)) {
@@ -106,8 +107,9 @@ public class ChatUpdater implements Runnable{
 
             /**
              * Close the message consumer, session and connection when they are not needed anymore
+             * and shutdown the listener
              */
-            if(!terminator){
+            if (!terminator) {
                 consumer.close();
                 session.close();
                 connection.close();

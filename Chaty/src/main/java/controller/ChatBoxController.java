@@ -19,6 +19,7 @@ import javafx.scene.layout.*;
 import javafx.event.ActionEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import lombok.Getter;
 import lombok.Setter;
 import model.ChatMessage;
@@ -89,6 +90,7 @@ public class ChatBoxController implements Initializable {
 
     /**
      * Takes the user to the previous page of the Chat Rooms list
+     *
      * @param event
      * @throws IOException
      */
@@ -98,7 +100,10 @@ public class ChatBoxController implements Initializable {
         Node node = (Node) event.getSource();
         Stage currentStage = (Stage) node.getScene().getWindow();
         setStageExit(currentStage);
-        currentStage.close();
+        // close current stage
+        currentStage.fireEvent(
+                new WindowEvent(currentStage,
+                        WindowEvent.WINDOW_CLOSE_REQUEST));
 
         // load chat rooms page
         Stage primaryStage = new Stage();
@@ -252,12 +257,14 @@ public class ChatBoxController implements Initializable {
 
     /**
      * Sets a listener of what to do when the the current stage is closing
+     *
      * @param stage Current active Stage
      */
-    private void setStageExit(Stage stage){
+    private void setStageExit(Stage stage) {
         stage.setOnCloseRequest(event -> {
             // terminate the thread and kill it!!!!
             this.chatUpdater.terminate();
+            System.out.println("i am in the exit");
             this.updater.interrupt();
             try {
                 this.updater.join();
@@ -285,7 +292,7 @@ public class ChatBoxController implements Initializable {
         });
 
         // Create an updater object and start a new thread which updates the ui
-        this.chatUpdater = new ChatUpdater(true,chatBox);
+        this.chatUpdater = new ChatUpdater(true, chatBox);
         this.updater = new Thread(this.chatUpdater);
         this.updater.start();
 

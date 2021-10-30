@@ -51,6 +51,10 @@ public class ChatUpdater implements Runnable {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         EncryptorDecryptor encryptorDecryptor = new EncryptorDecryptor();
 
+        // 2.1 create client id using the username from that was set in the previous controller
+        //     a dash - and the subscriber number also generated in the controller.LoginController class
+        String clientId = LoginController.USERNAME + "-" + LoginController.SUBSCRIBER_NUMBER;
+
         // 2.1. Create connection factory using
         ConnectionFactory factory = new ActiveMQConnectionFactory(QueueUtils.QUEUE_USERNAME, QueueUtils.QUEUE_PASSWORD,
                 QueueUtils.QUEUE_LOCATION);
@@ -60,7 +64,7 @@ public class ChatUpdater implements Runnable {
             Connection connection = factory.createConnection();
             // 2.3. Set the Client ID using the username from that was set in the previous controller
             //      a dash - and the subscriber number also generated in the controller.LoginController class
-            connection.setClientID(LoginController.USERNAME + "-" + LoginController.SUBSCRIBER_NUMBER + "-" + RandomStringUtils.randomAlphanumeric(8));
+            connection.setClientID(clientId);
             connection.start();
 
             // 2.4. Create a session which acknowledges the incoming messages
@@ -68,7 +72,7 @@ public class ChatUpdater implements Runnable {
             // 2.5. Create the topic object using the TOPIC_NAME
             Topic topic = session.createTopic(ChatRoomController.TOPIC_NAME);
             // 2.6. Create a MessageConsumer object
-            MessageConsumer consumer = session.createDurableSubscriber(topic, "Consumer-" + LoginController.SUBSCRIBER_NUMBER);
+            MessageConsumer consumer = session.createDurableSubscriber(topic, clientId);
             // while the thread is running listen to incoming messages
             while (terminator) {
 
@@ -111,6 +115,8 @@ public class ChatUpdater implements Runnable {
              */
             if (!terminator) {
                 consumer.close();
+                // unsub from topic to re-use the id
+                session.unsubscribe(clientId);
                 session.close();
                 connection.close();
             }

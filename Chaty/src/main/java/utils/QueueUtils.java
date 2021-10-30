@@ -8,4 +8,6 @@ public class QueueUtils {
     public static String QUEUE_USERNAME = "admin";
     public static String QUEUE_PASSWORD = "admin";
     public static String QUEUE_LOCATION = "tcp://localhost:61616";
+
+    public static String MESSAGE = "Message";
 }

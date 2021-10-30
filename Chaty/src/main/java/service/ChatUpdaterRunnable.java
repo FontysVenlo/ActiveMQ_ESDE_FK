@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import model.ChatMessage;
 import utils.ChatHelper;
+import utils.QueueUtils;
 
 import javax.jms.*;
 
@@ -87,7 +88,7 @@ public class ChatUpdaterRunnable implements Runnable {
             this.messageConsumer.setMessageListener(message -> {
                 try {
                     // 2.9. Retrieve a message from the message properties using the MESSAGE
-                    String retrievedMessageAsString = (String) message.getObjectProperty(ChatBoxController.MESSAGE);
+                    String retrievedMessageAsString = (String) message.getObjectProperty(QueueUtils.MESSAGE);
                     String decryptedMessage = encryptorDecryptor.decrypt(retrievedMessageAsString);
                     // 2.10. Create the ChatMessage object using the Gson and the decrypted message from step 9.
                     ChatMessage receivedChatMessage = gson.fromJson(decryptedMessage, ChatMessage.class);
@@ -115,7 +116,5 @@ public class ChatUpdaterRunnable implements Runnable {
         } catch (JMSException e) {
             e.printStackTrace();
         }
-
-
     }
 }

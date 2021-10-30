@@ -14,7 +14,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 
@@ -26,7 +25,6 @@ import lombok.Getter;
 import lombok.Setter;
 import model.ChatMessage;
 import model.User;
-import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.lang3.StringUtils;
 import service.MQService;
 import service.ActiveMQService;
@@ -51,9 +49,6 @@ public class ChatBoxController implements Initializable {
 
     Logger logger
             = Logger.getLogger(ChatBoxController.class.getName());
-
-    // Message property key
-    public static String MESSAGE = "Message";
 
     @FXML
     private AnchorPane anchorPane;
@@ -154,7 +149,7 @@ public class ChatBoxController implements Initializable {
 
         // Cannot send an empty message
         if (StringUtils.isBlank(this.messageBox.getText())) {
-            this.errorLabel.setText("Message Cannot be empty");
+            this.errorLabel.setText("Message cannot be empty");
             this.errorLabel.setTextFill(Color.RED);
             return;
         }
@@ -212,13 +207,13 @@ public class ChatBoxController implements Initializable {
         this.encryptorDecryptor = new EncryptorDecryptor();
         String chatMessageAsJson = encryptorDecryptor.encrypt(gson.toJson(msg));
         // 1.7.1.2 Pass the chatMessageAsJson as an ObjectProperty of the message using the setObjectProperty(MESSAGE, chatMessageAsJson)
-        message.setObjectProperty(MESSAGE, chatMessageAsJson);
+        message.setObjectProperty(QueueUtils.MESSAGE, chatMessageAsJson);
         // 1.7.1.3 use the producer
         messageProducer.send(message);
     }
 
     /**
-     * Sets a listener of what to do when the the current stage is closing
+     * Sets a listener of what to do when the current stage is closing
      *
      * @param stage Current active Stage
      */

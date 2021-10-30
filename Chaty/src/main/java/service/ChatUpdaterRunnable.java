@@ -3,7 +3,6 @@ package service;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import controller.ChatBoxController;
-import controller.ChatRoomController;
 import controller.LoginController;
 import data.EncryptorDecryptor;
 import javafx.application.Platform;
@@ -15,9 +14,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import model.ChatMessage;
-import org.apache.activemq.ActiveMQConnectionFactory;
 import utils.ChatHelper;
-import utils.QueueUtils;
 
 import javax.jms.*;
 
@@ -31,7 +28,7 @@ import javax.jms.*;
 public class ChatUpdaterRunnable implements Runnable {
 
     private VBox chatBox;
-    private ActiveMQService activeMQService;
+    private MQService activeMQService;
     private Connection connection;
     private Session session;
     private Topic topic;

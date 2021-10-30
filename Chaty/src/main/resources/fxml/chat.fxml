@@ -15,7 +15,7 @@
          <children>
             <ScrollPane fx:id="chatScrollPane" prefHeight="485.0" prefWidth="581.0">
                <content>
-                  <VBox fx:id="chatBox" alignment="TOP_RIGHT" prefHeight="470.0" prefWidth="582.0" />
+                  <VBox fx:id="chatBox" alignment="TOP_RIGHT" onMouseEntered="#bindExit" prefHeight="470.0" prefWidth="582.0" />
                </content>
             </ScrollPane>
          </children>

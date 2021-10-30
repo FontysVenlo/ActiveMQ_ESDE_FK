@@ -14,6 +14,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 
 import javafx.event.ActionEvent;
@@ -26,6 +28,7 @@ import model.ChatMessage;
 import model.User;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.lang3.StringUtils;
+import service.MQService;
 import service.ActiveMQService;
 import service.ChatUpdaterRunnable;
 import utils.ChatHelper;
@@ -77,11 +80,11 @@ public class ChatBoxController implements Initializable {
     private VBox chatBox;
 
     private Color colour;
-    private ConnectionFactory factory;
     private EncryptorDecryptor encryptorDecryptor;
-
     private ChatUpdaterRunnable chatUpdaterRunnable;
     private Thread updater;
+
+    private boolean hasEntered = false;
 
     @FXML
     void send(ActionEvent event) {
@@ -89,9 +92,23 @@ public class ChatBoxController implements Initializable {
     }
 
     /**
+     * Binds the exit strategy the first time the mouse enters the main layout
+     *
+     * @param mouseEvent {@link MouseEvent}
+     */
+    @FXML
+    public void bindExit(MouseEvent mouseEvent) {
+        if(!this.hasEntered){
+            Stage currentStage = (Stage) this.anchorPane.getScene().getWindow();
+            setStageExit(currentStage);
+            this.hasEntered = true;
+        }
+    }
+
+    /**
      * Takes the user to the previous page of the Chat Rooms list
      *
-     * @param event
+     * @param event {@link ActionEvent}
      * @throws IOException
      */
     @FXML
@@ -142,22 +159,13 @@ public class ChatBoxController implements Initializable {
             return;
         }
 
-        if (StringUtils.isNotBlank(this.errorLabel.getText())) {
-            this.errorLabel.setText("");
-        }
-
         Stage currentStage = (Stage) this.errorLabel.getScene().getWindow();
         setStageExit(currentStage);
 
-        ActiveMQService activeMQService = new ActiveMQService();
+        MQService activeMQService = new ActiveMQService();
 
-        // 1.1 set the factory using the QUEUE_USERNAME, QUEUE_PASSWORD and QUEUE_LOCATION variables of in QueueUtils - (continue on 1.1.1)
-        // QueueUtils is a helper class with public static fields
-        this.factory = createActiveMqConnectionFactory(QueueUtils.QUEUE_USERNAME, QueueUtils.QUEUE_PASSWORD,
-                QueueUtils.QUEUE_LOCATION);
-        // 1.2 Create a connection object
         try {
-            // 1.3 set the connection using the private createConnection - (continue on 1.3.1)
+            // 1.2 Create a connection object
             Connection connection = activeMQService.createConnection();
 
             // 1.4 Create a session object with the Session.AUTO_ACKNOWLEDGE
@@ -210,59 +218,11 @@ public class ChatBoxController implements Initializable {
     }
 
     /**
-     * 1.1.1 Implement the createActiveMqConnectionFactory method which creates a ConnectionFactory - hint one line solution
-     */
-
-    /**
-     * Create an ActiveMQConnectionFactory using the given username, password and the url that corresponds to the targeted Queue URL
-     *
-     * @param username queue username
-     * @param password queue password
-     * @param url      queue url location
-     * @return a ConnectionFactory of {@link ActiveMQConnectionFactory}
-     */
-    private ConnectionFactory createActiveMqConnectionFactory(String username, String password, String url) {
-        return this.factory = new ActiveMQConnectionFactory(username, password,
-                url);
-    }
-
-    /**
-     * 1.3.1 Implement the createConnection method which creates a JMS Connection - hint one line solution
-     */
-
-    /**
-     * Creates a connection to the Queue using the given factory
-     *
-     * @param connectionFactory
-     * @return a Connection to the Queue
-     * @throws JMSException
-     */
-    private Connection createConnection(ConnectionFactory connectionFactory) throws JMSException {
-        return connectionFactory.createConnection();
-    }
-
-    /**
-     * 1.6.1 Implement the createProducer method which creates a JMS MessageProducer - hint one line solution
-     */
-
-    /**
-     * Generate a JMS MessageProducer for the given JMS Session and Destination
-     *
-     * @param session     JMS Session
-     * @param destination JMS Destination
-     * @return a JMS MessageProducer
-     * @throws JMSException
-     */
-    private MessageProducer createProducer(Session session, Destination destination) throws JMSException {
-        return session.createProducer(destination);
-    }
-
-    /**
      * Sets a listener of what to do when the the current stage is closing
      *
      * @param stage Current active Stage
      */
-    private void setStageExit(Stage stage) {
+    public void setStageExit(Stage stage) {
         stage.setOnCloseRequest(event -> {
             // terminate the thread and its resources and kill it!!!!
             this.chatUpdaterRunnable.terminator();
@@ -279,27 +239,33 @@ public class ChatBoxController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-
         //Set background colour
         this.chatBox.setBackground(new Background(new BackgroundFill(Color.LIGHTCYAN, null, null)));
         // Assign user to a colour
         this.colour = ColourHelper.generateRandomColour();
         // Bind Chat Height to its parents height
-        chatScrollPane.vvalueProperty().bind(chatBox.heightProperty());
-        chatScrollPane.vvalueProperty().bind(chatBox.widthProperty());
+        this.chatScrollPane.vvalueProperty().bind(chatBox.heightProperty());
+        this.chatScrollPane.vvalueProperty().bind(chatBox.widthProperty());
         // listener for the message box when user presses enter
         this.messageBox.setOnKeyPressed(keyEvent -> {
             if (keyEvent.getCode().equals(KeyCode.ENTER)) {
                 performSend();
             }
+
+            if(StringUtils.isNotBlank(this.errorLabel.getText())){
+                this.errorLabel.setText("");
+            }
         });
+
+
 
         // Client id which is used to set the connection id and the consumer name
         String clientId = LoginController.USERNAME + "-" + LoginController.SUBSCRIBER_NUMBER;
         // Create an updater object and start a new thread which updates the ui
-        this.chatUpdaterRunnable = new ChatUpdaterRunnable(chatBox, clientId, ChatRoomController.TOPIC_NAME);
+        this.chatUpdaterRunnable = new ChatUpdaterRunnable(this.chatBox, clientId, ChatRoomController.TOPIC_NAME);
         this.updater = new Thread(this.chatUpdaterRunnable);
         this.updater.start();
     }
+
 
 }

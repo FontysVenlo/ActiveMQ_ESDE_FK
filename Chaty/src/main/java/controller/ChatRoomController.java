@@ -61,6 +61,7 @@ public class ChatRoomController implements Initializable {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/chat.fxml"));
         Parent root = loader.load();
 
+        // on closing this stage reset the topic name
         primaryStage.setOnCloseRequest(event -> {
             TOPIC_NAME="";
         });

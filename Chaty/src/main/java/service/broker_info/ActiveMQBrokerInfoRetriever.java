@@ -7,5 +7,5 @@ import java.util.List;
  */
 public interface ActiveMQBrokerInfoRetriever {
 
-    public List<String> getTopics();
+    List<String> getTopics();
 }

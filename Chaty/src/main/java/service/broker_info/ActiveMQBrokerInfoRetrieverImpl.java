@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Set;
 
 /**
- * Class which is used to retrieve information from the ActiveMQ Broker
+ * Concrete implementation of the {@link ActiveMQBrokerInfoRetriever} interface
  */
 public class ActiveMQBrokerInfoRetrieverImpl implements ActiveMQBrokerInfoRetriever {
 

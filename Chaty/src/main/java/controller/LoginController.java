@@ -95,7 +95,7 @@ public class LoginController implements Initializable {
         Parent root = loader.load();
 
 
-        primaryStage.setScene(new Scene(root, 600, 800));
+        primaryStage.setScene(new Scene(root, 600, 600));
         primaryStage.setTitle(TitleUtils.CHAT_ROOMS_TITLE);
         primaryStage.setResizable(false);
         primaryStage.show();

@@ -81,6 +81,7 @@ public class ChatRoomController implements Initializable {
         ActiveMQBrokerInfoRetrieverImpl brokerInfoRetriever = new ActiveMQBrokerInfoRetrieverImpl();
         List<String> chatRooms = brokerInfoRetriever.getTopics();
         ListView chatRoomsList = new ListView(FXCollections.observableList(chatRooms));
+        chatRoomsList.setPrefWidth(this.chatRoomsSpace.getPrefWidth());
         this.chatRoomsSpace.getChildren().add(chatRoomsList);
 
         chatRoomsList.setOnMouseClicked(event -> {

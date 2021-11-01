@@ -73,7 +73,8 @@ public class ParticipantsUpdateRunnable implements Runnable {
                 try {
                     // get the destination source for this topic
                     Destination source = message.getJMSDestination();
-
+                    // if the source is equal to the advisory support for the targeted topic then monitor
+                    // the addition and removal of new users
                     if (source.equals(AdvisorySupport.getConsumerAdvisoryTopic(this.monitored))) {
                         ActiveMQMessage activeMQMessage = (ActiveMQMessage) message;
                         // if a consumer was added update the list with the new usernames
@@ -82,7 +83,7 @@ public class ParticipantsUpdateRunnable implements Runnable {
                             // add participant username and connection id to the map
                             this.participantInfo.put(getConnectionIdPart(consumerInfo.getConsumerId().getConnectionId()),
                                     getUsernameFromSubscriptionName(consumerInfo.getSubscriptionName()));
-                            // if a consumer was removed remove it from the list
+                            // if a consumer was removed then remove it from the list of participants
                         } else if (activeMQMessage.getDataStructure() instanceof RemoveInfo) {
                             RemoveInfo removeInfo = (RemoveInfo) activeMQMessage.getDataStructure();
                             // remove participant from the map

@@ -42,7 +42,6 @@ public class ChatUpdaterRunnable implements Runnable {
     /**
      * 3.1. Implement the constructor using the ActiveMQService
      */
-
     public ChatUpdaterRunnable(VBox chatBox, String subId, String topicName) {
         this.activeMQService = new ActiveMQService();
         this.chatBox = chatBox;

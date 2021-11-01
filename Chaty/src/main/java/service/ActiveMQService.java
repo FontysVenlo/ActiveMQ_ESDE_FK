@@ -21,7 +21,7 @@ public class ActiveMQService implements MQService {
     @Override
     public Connection createConnection() throws JMSException {
         // 1.1 create a ConnectionFactory of type ActiveMQConnectionFactory using the QUEUE_USERNAME, QUEUE_PASSWORD and QUEUE_LOCATION
-        // fields in QueueUtils
+        // fields in the QueueUtils class
         ConnectionFactory factory = new ActiveMQConnectionFactory(QueueUtils.QUEUE_USERNAME, QueueUtils.QUEUE_PASSWORD,
                 QueueUtils.QUEUE_LOCATION);
 

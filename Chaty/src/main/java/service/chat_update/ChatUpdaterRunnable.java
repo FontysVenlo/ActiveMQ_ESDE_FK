@@ -80,7 +80,7 @@ public class ChatUpdaterRunnable implements Runnable {
     }
 
     /**
-     * 3.2. Implement the missing parts of the
+     * 3.2. Implement the missing parts of the run method
      */
     @Override
     public void run() {

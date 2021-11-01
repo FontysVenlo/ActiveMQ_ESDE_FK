@@ -71,7 +71,7 @@ public class ParticipantsUpdateRunnable implements Runnable {
             this.messageConsumer.setMessageListener(message -> {
 
                 try {
-                    // get the destination source for this topic
+                    // get the destination source for the monitored topic
                     Destination source = message.getJMSDestination();
                     // if the source is equal to the advisory support for the targeted topic then monitor
                     // the addition and removal of new users

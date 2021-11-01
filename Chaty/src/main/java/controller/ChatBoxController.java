@@ -268,7 +268,7 @@ public class ChatBoxController implements Initializable {
         this.updater = new Thread(this.chatUpdaterRunnable);
         this.updater.start();
 
-        // Create an updater for the participants
+        // Create an updater for the participants list
         this.participantsUpdateRunnable = new ParticipantsUpdateRunnable(this.participants, this.numberOfUsers, ChatRoomController.TOPIC_NAME);
         this.participantsUpdater = new Thread(this.participantsUpdateRunnable);
         this.participantsUpdater.start();

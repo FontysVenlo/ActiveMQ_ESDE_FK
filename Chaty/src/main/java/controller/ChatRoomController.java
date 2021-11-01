@@ -14,6 +14,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.Setter;
+import service.broker_info.ActiveMQBrokerInfoRetriever;
 import service.broker_info.ActiveMQBrokerInfoRetrieverImpl;
 import utils.TitleUtils;
 
@@ -27,7 +28,6 @@ import java.util.ResourceBundle;
 public class ChatRoomController implements Initializable {
 
     public static String TOPIC_NAME = "";
-    public static Stage CHAT_CONTROLLER_STAGE = null;
 
     @FXML
     private AnchorPane chatRoomsAnchorPane;
@@ -53,6 +53,11 @@ public class ChatRoomController implements Initializable {
         createChatRooms();
     }
 
+    /**
+     * Open the chat room for the selected topic
+     *
+     * @throws IOException
+     */
     private void openChat() throws IOException {
         Stage stage = (Stage) chatRoomsAnchorPane.getScene().getWindow();
         stage.close();
@@ -64,11 +69,9 @@ public class ChatRoomController implements Initializable {
         // on closing this stage reset the topic name
         primaryStage.setOnCloseRequest(event -> {
             TOPIC_NAME="";
-
         });
 
         primaryStage.setScene(new Scene(root, 915, 600));
-        CHAT_CONTROLLER_STAGE = primaryStage;
         primaryStage.setTitle(TOPIC_NAME + " " + TitleUtils.CHAT_TITLE);
         primaryStage.setResizable(false);
         primaryStage.show();
@@ -78,7 +81,7 @@ public class ChatRoomController implements Initializable {
      * Retrieves the available chatrooms and displays them
      */
     private void createChatRooms() {
-        ActiveMQBrokerInfoRetrieverImpl brokerInfoRetriever = new ActiveMQBrokerInfoRetrieverImpl();
+        ActiveMQBrokerInfoRetriever brokerInfoRetriever = new ActiveMQBrokerInfoRetrieverImpl();
         List<String> chatRooms = brokerInfoRetriever.getTopics();
         ListView chatRoomsList = new ListView(FXCollections.observableList(chatRooms));
         chatRoomsList.setPrefWidth(this.chatRoomsSpace.getPrefWidth());

@@ -14,7 +14,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.Setter;
-import service.ActiveMQBrokerInfoRetrieverImpl;
+import service.broker_info.ActiveMQBrokerInfoRetrieverImpl;
 import utils.TitleUtils;
 
 import java.io.IOException;
@@ -67,9 +67,10 @@ public class ChatRoomController implements Initializable {
 
         });
 
-        primaryStage.setScene(new Scene(root, 600, 800));
+        primaryStage.setScene(new Scene(root, 915, 600));
         CHAT_CONTROLLER_STAGE = primaryStage;
         primaryStage.setTitle(TOPIC_NAME + " " + TitleUtils.CHAT_TITLE);
+        primaryStage.setResizable(false);
         primaryStage.show();
     }
 

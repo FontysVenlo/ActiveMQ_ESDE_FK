@@ -32,6 +32,7 @@ public class ChatBox extends Application {
         Scene scene = new Scene(root, 600, 600);
         stage.setTitle(TitleUtils.LOGIN_TITLE);
         stage.setScene(scene);
+        stage.setResizable(false);
         stage.show();
     }
 

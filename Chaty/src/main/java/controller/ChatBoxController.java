@@ -9,10 +9,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
@@ -28,7 +25,8 @@ import model.User;
 import org.apache.commons.lang3.StringUtils;
 import service.MQService;
 import service.ActiveMQService;
-import service.ChatUpdaterRunnable;
+import service.chat_update.ChatUpdaterRunnable;
+import service.chat_update.ParticipantsUpdateRunnable;
 import utils.ChatHelper;
 import utils.ColourHelper;
 import utils.QueueUtils;
@@ -74,8 +72,21 @@ public class ChatBoxController implements Initializable {
     @FXML
     private VBox chatBox;
 
+    @FXML
+    private ListView<String> participants;
+
+    @FXML
+    private Label usersLabel;
+
+    @FXML
+    private Label numberOfUsers;
+
     private Color colour;
     private EncryptorDecryptor encryptorDecryptor;
+
+    private ParticipantsUpdateRunnable participantsUpdateRunnable;
+    private Thread participantsUpdater;
+
     private ChatUpdaterRunnable chatUpdaterRunnable;
     private Thread updater;
 
@@ -93,7 +104,7 @@ public class ChatBoxController implements Initializable {
      */
     @FXML
     public void bindExit(MouseEvent mouseEvent) {
-        if(!this.hasEntered){
+        if (!this.hasEntered) {
             Stage currentStage = (Stage) this.anchorPane.getScene().getWindow();
             setStageExit(currentStage);
             this.hasEntered = true;
@@ -221,9 +232,13 @@ public class ChatBoxController implements Initializable {
         stage.setOnCloseRequest(event -> {
             // terminate the thread and its resources and kill it!!!!
             this.chatUpdaterRunnable.terminator();
+            this.participantsUpdateRunnable.terminator();
+            // interrupt the threads
+            this.participantsUpdater.interrupt();
             this.updater.interrupt();
             try {
                 this.updater.join();
+                this.participantsUpdater.join();
                 ChatRoomController.TOPIC_NAME = "";
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -247,11 +262,10 @@ public class ChatBoxController implements Initializable {
                 performSend();
             }
 
-            if(StringUtils.isNotBlank(this.errorLabel.getText())){
+            if (StringUtils.isNotBlank(this.errorLabel.getText())) {
                 this.errorLabel.setText("");
             }
         });
-
 
 
         // Client id which is used to set the connection id and the consumer name
@@ -260,6 +274,11 @@ public class ChatBoxController implements Initializable {
         this.chatUpdaterRunnable = new ChatUpdaterRunnable(this.chatBox, clientId, ChatRoomController.TOPIC_NAME);
         this.updater = new Thread(this.chatUpdaterRunnable);
         this.updater.start();
+
+        // Create an updater for the participants
+        this.participantsUpdateRunnable = new ParticipantsUpdateRunnable(this.participants, this.numberOfUsers, ChatRoomController.TOPIC_NAME);
+        this.participantsUpdater = new Thread(this.participantsUpdateRunnable);
+        this.participantsUpdater.start();
     }
 
 

@@ -1,6 +1,7 @@
 package service;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
+import org.apache.activemq.advisory.AdvisorySupport;
 import utils.QueueUtils;
 
 import javax.jms.*;
@@ -95,6 +96,36 @@ public class ActiveMQService implements MQService {
     @Override
     public MessageProducer createMessageProducer(Session session, Destination destination) throws JMSException {
         return session.createProducer(destination);
+    }
+
+    /**
+     * Create AdvisoryDestination for a specific topic
+     *
+     * @param session     {@link Session}
+     * @param topicName the topic name
+     * @return an advisory destination {@link Destination}
+     * @throws JMSException
+     */
+    @Override
+    public Destination createAdvisoryDestination(Session session, String topicName) throws JMSException {
+        Destination monitored = session.createTopic(topicName);
+
+        return session.createTopic(
+                AdvisorySupport.getConsumerAdvisoryTopic(monitored).getPhysicalName() + "," +
+                        AdvisorySupport.getProducerAdvisoryTopic(monitored).getPhysicalName());
+    }
+
+    /**
+     * Creates an advisory Message Consumer for a specific topic
+     *
+     * @param session     {@link Session}
+     * @param destination {@link Destination}
+     * @return an advisory message consumer
+     * @throws JMSException
+     */
+    @Override
+    public MessageConsumer createAdvisoryMessageConsumer(Session session, Destination destination) throws JMSException {
+        return session.createConsumer(destination);
     }
 
 

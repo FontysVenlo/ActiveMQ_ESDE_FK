@@ -53,13 +53,6 @@ public class LoginController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // if there is value in the error label remove it
-        this.usernameField.setOnKeyPressed(keyEvent -> {
-            if (StringUtils.isNotBlank(this.errorLabel.getText())) {
-                this.errorLabel.setText("");
-            }
-        });
-
         //login by pressing enter
         this.usernameField.setOnKeyPressed(keyEvent -> {
             if (keyEvent.getCode().equals(KeyCode.ENTER)) {
@@ -69,8 +62,12 @@ public class LoginController implements Initializable {
                     e.printStackTrace();
                 }
             }
-        });
 
+            // if there is value in the error label remove it
+            if (StringUtils.isNotBlank(this.errorLabel.getText())) {
+                this.errorLabel.setText("");
+            }
+        });
     }
 
     /**
@@ -81,7 +78,7 @@ public class LoginController implements Initializable {
     @FXML
     public void assign() throws IOException {
         // check username value
-        if (this.usernameField.getText().isEmpty()) {
+        if (StringUtils.isBlank(this.usernameField.getText())) {
             this.errorLabel.setText("Please insert a Username");
             this.errorLabel.setTextFill(Color.RED);
             return;
@@ -100,6 +97,7 @@ public class LoginController implements Initializable {
 
         primaryStage.setScene(new Scene(root, 600, 800));
         primaryStage.setTitle(TitleUtils.CHAT_ROOMS_TITLE);
+        primaryStage.setResizable(false);
         primaryStage.show();
 
     }

@@ -11,7 +11,7 @@
       <TextField fx:id="usernameField" layoutX="168.0" layoutY="250.0" prefHeight="25.0" prefWidth="249.0" />
       <Label fx:id="usernameLabel" layoutX="168.0" layoutY="222.0" prefHeight="17.0" prefWidth="128.0" text="Choose a username:" />
       <Button fx:id="loginButton" layoutX="256.0" layoutY="304.0" mnemonicParsing="false" onAction="#assign" text="Enter Chatty" />
-      <Label fx:id="errorLabel" layoutX="167.0" layoutY="262.0" />
+      <Label fx:id="errorLabel" layoutX="168.0" layoutY="275.0" />
       <ImageView fx:id="logoStart" fitHeight="150.0" fitWidth="200.0" layoutX="192.0" layoutY="31.0" pickOnBounds="true" preserveRatio="true" />
    </children>
 </AnchorPane>

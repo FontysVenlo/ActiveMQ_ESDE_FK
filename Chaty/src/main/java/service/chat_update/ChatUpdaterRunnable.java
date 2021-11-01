@@ -39,6 +39,10 @@ public class ChatUpdaterRunnable implements Runnable {
     private String topicName;
     private String subId;
 
+    /**
+     * 3.1. Implement the constructor using the ActiveMQService
+     */
+
     public ChatUpdaterRunnable(VBox chatBox, String subId, String topicName) {
         this.activeMQService = new ActiveMQService();
         this.chatBox = chatBox;
@@ -46,10 +50,15 @@ public class ChatUpdaterRunnable implements Runnable {
         this.topicName = topicName;
 
         try {
+            // 3.1.1 create connection
             this.connection = this.activeMQService.createConnection();
+            // 3.1.2 set client id using the subId
             this.connection.setClientID(this.subId);
+            // 3.1.3 create session
             this.session = this.activeMQService.createSession(this.connection, Session.CLIENT_ACKNOWLEDGE);
+            // 3.1.4 create topic
             this.topic = this.activeMQService.createTopic(this.session, this.topicName);
+            // 3.1.5 create message consumer
             this.messageConsumer = this.activeMQService.createMessageConsumer(this.session, this.topic, this.subId);
         } catch (JMSException e) {
             System.out.println(e.getStackTrace());
@@ -72,31 +81,25 @@ public class ChatUpdaterRunnable implements Runnable {
     }
 
     /**
-     * 2. Create the listener which is going to update the UI with the incoming messages
+     * 3.2. Implement the missing parts of the
      */
     @Override
     public void run() {
-
         // gson object which
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         EncryptorDecryptor encryptorDecryptor = new EncryptorDecryptor();
-
-        // 2.1 create client id using the username from that was set in the previous controller
-        //     a dash - and the subscriber number also generated in the controller.LoginController class
 
         try {
             this.connection.start();
             this.messageConsumer.setMessageListener(message -> {
                 try {
-                    // 2.9. Retrieve a message from the message properties using the MESSAGE
+                    // 3.2.1 Retrieve a message from the message properties using the MESSAGE field in the QueueUtils
                     String retrievedMessageAsString = (String) message.getObjectProperty(QueueUtils.MESSAGE);
                     String decryptedMessage = encryptorDecryptor.decrypt(retrievedMessageAsString);
-                    // 2.10. Create the ChatMessage object using the Gson and the decrypted message from step 9.
                     ChatMessage receivedChatMessage = gson.fromJson(decryptedMessage, ChatMessage.class);
 
-                    // 2.11. Acknowledge the message
+                    // 3.2.2 Acknowledge the message
                     message.acknowledge();
-
                     // Update the UI
                     Platform.runLater(() -> {
                         // Generate the message as a UI object

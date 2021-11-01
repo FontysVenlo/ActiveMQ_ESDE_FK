@@ -94,7 +94,7 @@ public class ChatBoxController implements Initializable {
 
     @FXML
     void send(ActionEvent event) {
-        performSend();
+        performSendMessage();
     }
 
     /**
@@ -140,23 +140,12 @@ public class ChatBoxController implements Initializable {
     }
 
     /**
-     * 1. Implement the performSend() and all the private methods
-     *
-     * Quick links to other exercises
-     *
-     * 1.1.1 {@link ChatBoxController#createActiveMqConnectionFactory(String, String, String)}
-     *
-     * 1.3.1 {@link ChatBoxController#createConnection(ConnectionFactory)}
-     *
-     * 1.6.1 {@link ChatBoxController#createProducer(Session, Destination)}
-     *
-     * 1.7.1 {@link ChatBoxController#sendMessage(MessageProducer, Session, String)}
+     * 2.1 Implement the perform send message method steps
      */
-
     /**
      * Performs the actual send of the message
      */
-    private void performSend() {
+    private void performSendMessage() {
 
         // Cannot send an empty message
         if (StringUtils.isBlank(this.messageBox.getText())) {
@@ -171,17 +160,17 @@ public class ChatBoxController implements Initializable {
         MQService activeMQService = new ActiveMQService();
 
         try {
-            // 1.2 Create a connection object
+            // 2.1.1 Create a connection object
             Connection connection = activeMQService.createConnection();
 
-            // 1.4 Create a session object with the Session.AUTO_ACKNOWLEDGE
+            // 2.1.2 Create a session object with the Session.AUTO_ACKNOWLEDGE
             Session session = activeMQService.createSession(connection, Session.AUTO_ACKNOWLEDGE);
 
-            // 1.5 Create a Destination Object using the TOPIC_NAME
+            // 2.1.3 Create a Destination Object using the TOPIC_NAME
             Destination destination = activeMQService.createDestination(session, ChatRoomController.TOPIC_NAME);
-            // 1.6 Create MessageProducer using the createProducer private method which uses the session and connection objects from 1.5-1.6
+            // 2.1.4 Create MessageProducer using the createProducer private method which uses the session and connection objects from the previous methods
             MessageProducer producer = activeMQService.createMessageProducer(session, destination);
-            // 1.7 send the message using the sendQueueMessage method - (continue on 1.7.1)
+            // 2.1.5 send the message using the sendQueueMessage method - (continue on 2.2.1)
             sendMessage(producer, session, this.messageBox.getText());
 
             // close the connection, session and  producer to save resources
@@ -196,7 +185,7 @@ public class ChatBoxController implements Initializable {
     }
 
     /**
-     * 1.7.1 Implement the missing parts of the sendQueueMessage method
+     * 2.2 Implement the missing parts of the missing part of the sendMessage method
      */
 
     /**
@@ -208,18 +197,20 @@ public class ChatBoxController implements Initializable {
      * @throws JMSException
      */
     private void sendMessage(MessageProducer messageProducer, Session session, String text) throws JMSException {
-        //1.7.1.1 Create Message object using the given Session parameter
+        // 2.2.1 Create Message object using the given Session parameter
         Message message = session.createMessage();
         // create message and user
         User user = new User(LoginController.USERNAME, LoginController.SUBSCRIBER_NUMBER, this.colour.toString());
         ChatMessage msg = new ChatMessage(text, ChatHelper.returnCurrentLocalDateTimeAsString(), user);
         // chat message as json
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        // encrypt the message
         this.encryptorDecryptor = new EncryptorDecryptor();
         String chatMessageAsJson = encryptorDecryptor.encrypt(gson.toJson(msg));
-        // 1.7.1.2 Pass the chatMessageAsJson as an ObjectProperty of the message using the setObjectProperty(MESSAGE, chatMessageAsJson)
+        // 2.2.2 Pass the chatMessageAsJson as an ObjectProperty of the message using the setObjectProperty(MESSAGE, chatMessageAsJson)
+        //  MESSAGE is a field already set in the QueueUtils helper class
         message.setObjectProperty(QueueUtils.MESSAGE, chatMessageAsJson);
-        // 1.7.1.3 use the producer
+        // 2.2.3 use the producer to send the message
         messageProducer.send(message);
     }
 
@@ -237,8 +228,10 @@ public class ChatBoxController implements Initializable {
             this.participantsUpdater.interrupt();
             this.updater.interrupt();
             try {
+                // make sure that the thread dies
                 this.updater.join();
                 this.participantsUpdater.join();
+                // reset topic name
                 ChatRoomController.TOPIC_NAME = "";
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -259,7 +252,7 @@ public class ChatBoxController implements Initializable {
         // listener for the message box when user presses enter
         this.messageBox.setOnKeyPressed(keyEvent -> {
             if (keyEvent.getCode().equals(KeyCode.ENTER)) {
-                performSend();
+                performSendMessage();
             }
 
             if (StringUtils.isNotBlank(this.errorLabel.getText())) {

@@ -12,6 +12,14 @@ import javax.jms.*;
 public class ActiveMQService implements MQService {
 
     /**
+     * 1. Implement the ActiveMQService methods which create JMS Objects
+     */
+
+
+    /**
+     * 1.1 Create a new connection using a ConnectionFactory - Hint: Two lines of code
+     */
+    /**
      * Creates a JMS {@link Connection} using the fields of the {@link QueueUtils} and a JMS {@link ConnectionFactory} of type
      * {@link ActiveMQConnectionFactory} in order to create a connection to the given ActiveMQ broker
      *
@@ -20,13 +28,17 @@ public class ActiveMQService implements MQService {
      */
     @Override
     public Connection createConnection() throws JMSException {
-        // 1.1 create a ConnectionFactory of type ActiveMQConnectionFactory using the QUEUE_USERNAME, QUEUE_PASSWORD and QUEUE_LOCATION
+        // 1.1.2 create a ConnectionFactory of type ActiveMQConnectionFactory using the QUEUE_USERNAME, QUEUE_PASSWORD and QUEUE_LOCATION
         // fields in the QueueUtils class
         ConnectionFactory factory = new ActiveMQConnectionFactory(QueueUtils.QUEUE_USERNAME, QueueUtils.QUEUE_PASSWORD,
                 QueueUtils.QUEUE_LOCATION);
-
+        // 1.1.2
         return factory.createConnection();
     }
+
+    /**
+     * 1.2 Create a new Session using the given connection and the session mode - Hint: One line of code
+     */
 
     /**
      * Creates a JMS {@link Session} using the passed connection and session mode
@@ -38,9 +50,14 @@ public class ActiveMQService implements MQService {
      */
     @Override
     public Session createSession(Connection connection, int sessionMode) throws JMSException {
-        Session session = connection.createSession(false, sessionMode);
-        return session;
+        // 1.2.1 Create the session using the given parameters
+        return connection.createSession(false, sessionMode);
     }
+
+    /**
+     * 1.3 Create a new Topic using the given connection and the topic name - Hint: One line of code
+     */
+
 
     /**
      * Create a JMS {@link Topic} object using the passed JMS {@link Session} and topic name
@@ -52,9 +69,14 @@ public class ActiveMQService implements MQService {
      */
     @Override
     public Topic createTopic(Session session, String topicName) throws JMSException {
-        Topic topic = session.createTopic(topicName);
-        return topic;
+        // 1.3.1 create a new topic
+        return session.createTopic(topicName);
     }
+
+
+    /**
+     * 1.4 Create a new Destination using the given connection and the topic name - Hint: One line of code - same as line 73
+     */
 
     /**
      * Creates a new JMS {@link Destination} using the passed JMS {@link Session} and topic name
@@ -66,8 +88,14 @@ public class ActiveMQService implements MQService {
      */
     @Override
     public Destination createDestination(Session session, String topicName) throws JMSException {
+        // 1.4.1 create a destination
         return session.createTopic(topicName);
     }
+
+
+    /**
+     * 1.5 Create a new MessageConsumer using the given session, topic and subscriber name - Hint: One line of code
+     */
 
     /**
      * Create a {@link MessageConsumer} using the given {@link Session} and {@link Topic} and a subscriber name
@@ -80,8 +108,13 @@ public class ActiveMQService implements MQService {
      */
     @Override
     public MessageConsumer createMessageConsumer(Session session, Topic topic, String subscriberName) throws JMSException {
+        // 1.5.1 create a message consumer using the session's create durable subscriber method
         return session.createDurableSubscriber(topic, subscriberName);
     }
+
+    /**
+     * 1.6 Create a new MessageProducer using the given session and destination - Hint: One line of code
+     */
 
 
     /**
@@ -95,6 +128,7 @@ public class ActiveMQService implements MQService {
      */
     @Override
     public MessageProducer createMessageProducer(Session session, Destination destination) throws JMSException {
+        // 1.6.1 create a producer
         return session.createProducer(destination);
     }
 

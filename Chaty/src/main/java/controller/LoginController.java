@@ -85,7 +85,7 @@ public class LoginController implements Initializable {
         }
 
         // set username and subscriber number
-        USERNAME = this.usernameField.getText();
+        USERNAME = this.usernameField.getText().trim();
         SUBSCRIBER_NUMBER = RandomStringUtils.randomAlphanumeric(6);
 
         Stage stage = (Stage) loginAnchorPane.getScene().getWindow();

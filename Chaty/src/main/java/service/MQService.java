@@ -3,7 +3,7 @@ package service;
 import javax.jms.*;
 
 /**
- * Interface create holds the methods for creating JMS Objects
+ * Interface which holds the methods for creating JMS Objects
  */
 public interface MQService {
 

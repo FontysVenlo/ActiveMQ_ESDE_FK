@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * User object is used to store the sender's info in the message
+ * User object is used to store the sender's info in the {@link ChatMessage}
  */
 @Getter
 @Setter

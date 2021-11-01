@@ -12,7 +12,7 @@ import javax.jms.*;
 public class ActiveMQService implements MQService {
 
     /**
-     * 1. Implement the ActiveMQService methods which create JMS Objects
+     * 1. Implement the ActiveMQService methods which create JMS Objects that are need for sending and receiving messages
      */
 
 

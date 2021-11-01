@@ -5,10 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
-
 /**
- * Message object that is sent to the queue/topic
+ * Message object that is sent to the topic
  */
 @Setter
 @Getter

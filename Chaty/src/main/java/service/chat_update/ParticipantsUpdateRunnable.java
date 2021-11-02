@@ -65,11 +65,8 @@ public class ParticipantsUpdateRunnable implements Runnable {
 
     @Override
     public void run() {
-
         try {
-            this.connection.start();
             this.messageConsumer.setMessageListener(message -> {
-
                 try {
                     // get the destination source for the monitored topic
                     Destination source = message.getJMSDestination();
@@ -102,8 +99,8 @@ public class ParticipantsUpdateRunnable implements Runnable {
                     System.out.println(e.getStackTrace());
                 }
             });
-
-
+            // start the conenction
+            this.connection.start();
         } catch (JMSException e) {
             System.out.println(e.getStackTrace());
         }

@@ -89,7 +89,6 @@ public class ChatUpdaterRunnable implements Runnable {
         EncryptorDecryptor encryptorDecryptor = new EncryptorDecryptor();
 
         try {
-            this.connection.start();
             this.messageConsumer.setMessageListener(message -> {
                 try {
                     // 3.2.1 Retrieve a message from the message properties using the MESSAGE field in the QueueUtils
@@ -115,7 +114,8 @@ public class ChatUpdaterRunnable implements Runnable {
                     System.out.println(e.getStackTrace());
                 }
             });
-
+            // start the connection
+            this.connection.start();
         } catch (JMSException e) {
             e.printStackTrace();
         }

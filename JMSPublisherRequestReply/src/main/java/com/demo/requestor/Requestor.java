@@ -60,7 +60,7 @@ public class Requestor implements MessageListener {
         }
         // shut down everything if everything is received
         if (this.done.await(10, TimeUnit.MINUTES)) {
-            // send the shut down message to the responder
+            // send the shutdown message to the responder
             TextMessage messageToShutDown = this.session.createTextMessage("Shutdown my friend");
             messageToShutDown.setJMSReplyTo(temporaryResponseQueue);
             messageToShutDown.setJMSCorrelationID("REQUEST: Shutdown");

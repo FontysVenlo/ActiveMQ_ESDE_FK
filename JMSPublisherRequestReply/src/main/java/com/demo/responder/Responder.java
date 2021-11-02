@@ -62,7 +62,7 @@ public class Responder implements MessageListener {
                 TextMessage textMessage = (TextMessage) message;
                 System.out.println(textMessage.getText());
 
-                // if it receives the shut down message, close the message
+                // if it receives the shutdown message, close the resources
                 if (textMessage.getText().contains("Shutdown my")) {
                     textMessage.acknowledge();
                     // shut down the system

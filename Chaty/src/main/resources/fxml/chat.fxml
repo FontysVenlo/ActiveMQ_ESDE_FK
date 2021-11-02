@@ -24,7 +24,7 @@
       <Label fx:id="errorLabel" layoutX="75.0" layoutY="528.0" />
       <Button fx:id="backButton" layoutX="14.0" layoutY="503.0" mnemonicParsing="false" onAction="#back" text="Back" />
       <ListView fx:id="participants" layoutX="581.0" layoutY="29.0" prefHeight="457.0" prefWidth="333.0" />
-      <Label fx:id="usersLabel" layoutX="809.0" layoutY="6.0" text="Users:" />
+      <Label fx:id="usersLabel" layoutX="757.0" layoutY="6.0" text="Available Users:" />
       <Label fx:id="numberOfUsers" layoutX="850.0" layoutY="6.0" />
    </children>
 </AnchorPane>

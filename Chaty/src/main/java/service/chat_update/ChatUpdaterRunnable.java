@@ -71,6 +71,7 @@ public class ChatUpdaterRunnable implements Runnable {
     public void terminator() {
         try {
             this.messageConsumer.close();
+            // unsub from the topic to reduce overhead
             this.session.unsubscribe(this.subId);
             this.session.close();
             this.connection.close();
@@ -84,7 +85,7 @@ public class ChatUpdaterRunnable implements Runnable {
      */
     @Override
     public void run() {
-        // gson object which
+        // gson object which is used to deserialize the received message
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         EncryptorDecryptor encryptorDecryptor = new EncryptorDecryptor();
 

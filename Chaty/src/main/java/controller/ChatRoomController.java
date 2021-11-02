@@ -65,7 +65,6 @@ public class ChatRoomController implements Initializable {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/chat.fxml"));
         Parent root = loader.load();
 
-
         // on closing this stage reset the topic name
         primaryStage.setOnCloseRequest(event -> {
             TOPIC_NAME="";
@@ -87,9 +86,11 @@ public class ChatRoomController implements Initializable {
         chatRoomsList.setPrefWidth(this.chatRoomsSpace.getPrefWidth());
         this.chatRoomsSpace.getChildren().add(chatRoomsList);
 
+        // on topic clicked take the user to the corresponding chatroom
         chatRoomsList.setOnMouseClicked(event -> {
             Object chatRoomValue = chatRoomsList.getSelectionModel().getSelectedItem();
             if (chatRoomValue != null) {
+                // set topic name
                 TOPIC_NAME = chatRoomValue.toString().trim();
                 try {
                     openChat();

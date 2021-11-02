@@ -105,9 +105,9 @@ public class ChatBoxController implements Initializable {
     @FXML
     public void bindExit(MouseEvent mouseEvent) {
         if (!this.hasEntered) {
+            this.hasEntered = true;
             Stage currentStage = (Stage) this.anchorPane.getScene().getWindow();
             setStageExit(currentStage);
-            this.hasEntered = true;
         }
     }
 

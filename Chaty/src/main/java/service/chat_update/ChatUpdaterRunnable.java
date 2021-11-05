@@ -2,7 +2,6 @@ package service.chat_update;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import controller.ChatBoxController;
 import controller.LoginController;
 import data.EncryptorDecryptor;
 import javafx.application.Platform;
@@ -17,7 +16,7 @@ import model.ChatMessage;
 import service.ActiveMQService;
 import service.MQService;
 import utils.ChatHelper;
-import utils.QueueUtils;
+import utils.BrokerUtils;
 
 import javax.jms.*;
 
@@ -49,7 +48,7 @@ public class ChatUpdaterRunnable implements Runnable {
         this.topicName = topicName;
 
         try {
-            // 3.1.1 create connection
+            // 3.1.1 create connection using the activeMQService
             this.connection = this.activeMQService.createConnection();
             // 3.1.2 set client id using the subId
             this.connection.setClientID(this.subId);
@@ -92,8 +91,8 @@ public class ChatUpdaterRunnable implements Runnable {
         try {
             this.messageConsumer.setMessageListener(message -> {
                 try {
-                    // 3.2.1 Retrieve a message from the message properties using the MESSAGE field in the QueueUtils
-                    String retrievedMessageAsString = (String) message.getObjectProperty(QueueUtils.MESSAGE);
+                    // 3.2.1 Retrieve a message from the message properties using the MESSAGE field in the BrokerUtils
+                    String retrievedMessageAsString = (String) message.getObjectProperty(BrokerUtils.MESSAGE);
                     String decryptedMessage = encryptorDecryptor.decrypt(retrievedMessageAsString);
                     ChatMessage receivedChatMessage = gson.fromJson(decryptedMessage, ChatMessage.class);
 

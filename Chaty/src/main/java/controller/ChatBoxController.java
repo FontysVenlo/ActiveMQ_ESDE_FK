@@ -29,7 +29,7 @@ import service.chat_update.ChatUpdaterRunnable;
 import service.chat_update.ParticipantsUpdateRunnable;
 import utils.ChatHelper;
 import utils.ColourHelper;
-import utils.QueueUtils;
+import utils.BrokerUtils;
 import utils.TitleUtils;
 
 import javax.jms.*;
@@ -140,8 +140,9 @@ public class ChatBoxController implements Initializable {
     }
 
     /**
-     * 2.1 Implement the perform send message method steps
+     * 2.1 Implement method steps
      */
+
     /**
      * Performs the actual send of the message
      */
@@ -170,7 +171,10 @@ public class ChatBoxController implements Initializable {
             Destination destination = activeMQService.createDestination(session, ChatRoomController.TOPIC_NAME);
             // 2.1.4 Create MessageProducer using the createProducer private method which uses the session and connection objects from the previous methods
             MessageProducer producer = activeMQService.createMessageProducer(session, destination);
-            // 2.1.5 send the message using the sendQueueMessage method - (continue on 2.2.1)
+            /**
+             *  2.1.5 send the message using the sendQueueMessage method - (continue on 2.2.1)
+             * @see ChatBoxController#sendMessage(MessageProducer, Session, String)
+             */
             sendMessage(producer, session, this.messageBox.getText());
 
             // close the connection, session and  producer to save resources
@@ -208,8 +212,8 @@ public class ChatBoxController implements Initializable {
         this.encryptorDecryptor = new EncryptorDecryptor();
         String chatMessageAsJson = encryptorDecryptor.encrypt(gson.toJson(msg));
         // 2.2.2 Pass the chatMessageAsJson as an ObjectProperty of the message using the setObjectProperty(MESSAGE, chatMessageAsJson)
-        //  MESSAGE is a field already set in the QueueUtils helper class
-        message.setObjectProperty(QueueUtils.MESSAGE, chatMessageAsJson);
+        //  MESSAGE is a field already set in the BrokerUtils helper class
+        message.setObjectProperty(BrokerUtils.MESSAGE, chatMessageAsJson);
         // 2.2.3 use the producer to send the message
         messageProducer.send(message);
     }

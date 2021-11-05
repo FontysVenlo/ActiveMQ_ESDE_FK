@@ -2,7 +2,7 @@ package service;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.advisory.AdvisorySupport;
-import utils.QueueUtils;
+import utils.BrokerUtils;
 
 import javax.jms.*;
 
@@ -20,7 +20,7 @@ public class ActiveMQService implements MQService {
      * 1.1 Create a new connection using a ConnectionFactory - Hint: Two lines of code
      */
     /**
-     * Creates a JMS {@link Connection} using the fields of the {@link QueueUtils} and a JMS {@link ConnectionFactory} of type
+     * Creates a JMS {@link Connection} using the fields of the {@link BrokerUtils} and a JMS {@link ConnectionFactory} of type
      * {@link ActiveMQConnectionFactory} in order to create a connection to the given ActiveMQ broker
      *
      * @return a JMS {@link Connection}
@@ -29,9 +29,9 @@ public class ActiveMQService implements MQService {
     @Override
     public Connection createConnection() throws JMSException {
         // 1.1.2 create a ConnectionFactory of type ActiveMQConnectionFactory using the QUEUE_USERNAME, QUEUE_PASSWORD and QUEUE_LOCATION
-        // fields in the QueueUtils class
-        ConnectionFactory factory = new ActiveMQConnectionFactory(QueueUtils.QUEUE_USERNAME, QueueUtils.QUEUE_PASSWORD,
-                QueueUtils.QUEUE_LOCATION);
+        // fields in the BrokerUtils class
+        ConnectionFactory factory = new ActiveMQConnectionFactory(BrokerUtils.QUEUE_USERNAME, BrokerUtils.QUEUE_PASSWORD,
+                BrokerUtils.QUEUE_LOCATION);
         // 1.1.2
         return factory.createConnection();
     }

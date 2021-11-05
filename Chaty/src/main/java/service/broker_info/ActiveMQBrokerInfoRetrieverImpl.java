@@ -4,8 +4,11 @@ import org.apache.activemq.ActiveMQConnection;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.advisory.DestinationSource;
 import org.apache.activemq.command.ActiveMQTopic;
-import utils.QueueUtils;
+import service.ActiveMQService;
+import service.MQService;
+import utils.BrokerUtils;
 
+import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
 import java.util.List;
 import java.util.ArrayList;
@@ -17,24 +20,29 @@ import java.util.Set;
 public class ActiveMQBrokerInfoRetrieverImpl implements ActiveMQBrokerInfoRetriever {
 
     /**
+     * 3. Implement the logic of retrieving the topics you created from ActiveMQ Broker
+     */
+
+    /**
      * Retrieve topic names list to be used as chatRooms
      *
      * @return a list of the available topic names
      */
     @Override
     public List<String> getTopics() {
+        // 3.1 Create an MQService
+        MQService mqService = new ActiveMQService();
         List<String> topicNames = new ArrayList<>();
-        ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(QueueUtils.QUEUE_USERNAME, QueueUtils.QUEUE_PASSWORD,
-                QueueUtils.QUEUE_LOCATION);
 
         try {
-            // create an ActiveMQConnection
-            ActiveMQConnection connection = (ActiveMQConnection) factory.createConnection();
+            // 3.2 Create an active mq connection using the MQService - note it needs to be of type ActiveMQConnection
+            ActiveMQConnection connection = (ActiveMQConnection) mqService.createConnection();
+            // 3.3 Start the connection
             connection.start();
-            // Create a Destination Source
-            DestinationSource destSource = connection.getDestinationSource();
-            // Get the current topics
-            Set<ActiveMQTopic> topics = destSource.getTopics();
+            // 3.4 Create a DestinationSource object using the previously created connections
+            DestinationSource destinationSource = connection.getDestinationSource();
+            // 3.5 Get the topics from the destination source
+            Set<ActiveMQTopic> topics = destinationSource.getTopics();
 
             topics.forEach(topic -> {
                 try {
@@ -46,8 +54,8 @@ public class ActiveMQBrokerInfoRetrieverImpl implements ActiveMQBrokerInfoRetrie
                     e.printStackTrace();
                 }
             });
-            // close open resources
-            destSource.stop();
+            // 3.6 Close the destination source using its stop method and the previously created connection
+            destinationSource.stop();
             connection.close();
         } catch (JMSException e) {
             e.printStackTrace();

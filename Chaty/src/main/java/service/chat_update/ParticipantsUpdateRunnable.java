@@ -15,6 +15,9 @@ import javax.jms.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * Runnable which listens to the given topic and updates its participants
+ */
 public class ParticipantsUpdateRunnable implements Runnable {
 
     private ListView participants;

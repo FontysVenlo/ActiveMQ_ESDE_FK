@@ -10,13 +10,10 @@ import org.apache.activemq.command.ConsumerInfo;
 import org.apache.activemq.command.RemoveInfo;
 import service.ActiveMQService;
 import service.MQService;
-import sun.security.krb5.internal.crypto.Des;
 
 import javax.jms.*;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.HashMap;
-import java.util.HashSet;
 
 public class ParticipantsUpdateRunnable implements Runnable {
 
@@ -80,7 +77,7 @@ public class ParticipantsUpdateRunnable implements Runnable {
                             // add participant username and connection id to the map
                             this.participantInfo.put(getConnectionIdPart(consumerInfo.getConsumerId().getConnectionId()),
                                     getUsernameFromSubscriptionName(consumerInfo.getSubscriptionName()));
-                            // if a consumer was removed then remove it from the list of participants
+                            // if a consumer was removed then remove it's corresponding user from the list of participants
                         } else if (activeMQMessage.getDataStructure() instanceof RemoveInfo) {
                             RemoveInfo removeInfo = (RemoveInfo) activeMQMessage.getDataStructure();
                             // remove participant from the map

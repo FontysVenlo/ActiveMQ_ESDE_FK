@@ -28,11 +28,11 @@ public class ActiveMQService implements MQService {
      */
     @Override
     public Connection createConnection() throws JMSException {
-        // 1.1.2 create a ConnectionFactory of type ActiveMQConnectionFactory using the QUEUE_USERNAME, QUEUE_PASSWORD and QUEUE_LOCATION
+        // 1.1.1 create a ConnectionFactory of type ActiveMQConnectionFactory using the QUEUE_USERNAME, QUEUE_PASSWORD and QUEUE_LOCATION
         // fields in the BrokerUtils class
         ConnectionFactory factory = new ActiveMQConnectionFactory(BrokerUtils.QUEUE_USERNAME, BrokerUtils.QUEUE_PASSWORD,
                 BrokerUtils.QUEUE_LOCATION);
-        // 1.1.2
+        // 1.1.2 return a connection object from this factory
         return factory.createConnection();
     }
 
@@ -54,10 +54,10 @@ public class ActiveMQService implements MQService {
         return connection.createSession(false, sessionMode);
     }
 
+
     /**
      * 1.3 Create a new Topic using the given connection and the topic name - Hint: One line of code
      */
-
 
     /**
      * Create a JMS {@link Topic} object using the passed JMS {@link Session} and topic name
